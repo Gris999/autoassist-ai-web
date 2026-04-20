@@ -1,0 +1,30 @@
+.page {
+  padding: 24px;
+}
+
+.error-box {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #b3261e;
+}
+
+.cards {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
