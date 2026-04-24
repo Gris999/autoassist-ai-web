@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
 import { TokenService } from '../../../../core/services/token.service';
@@ -9,7 +9,7 @@ import { TokenService } from '../../../../core/services/token.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -21,11 +21,28 @@ export class Login {
 
   loading = false;
   errorMessage = '';
+  showPassword = false;
+  selectedAccess = 'cliente';
+
+  readonly accessTypes = [
+    { id: 'cliente', label: 'Cliente' },
+    { id: 'taller', label: 'Taller' },
+    { id: 'tecnico', label: 'Tecnico' },
+    { id: 'admin', label: 'Admin' },
+  ];
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });
+
+  selectAccess(accessId: string): void {
+    this.selectedAccess = accessId;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -45,7 +62,7 @@ export class Login {
       next: (response) => {
         this.tokenService.setToken(response.access_token);
         this.loading = false;
-        this.router.navigate(['/solicitudes']);
+        this.router.navigate(['/taller']);
       },
       error: (error) => {
         console.error('Error de login:', error);

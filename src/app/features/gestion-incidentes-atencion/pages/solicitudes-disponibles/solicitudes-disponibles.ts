@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 import { IncidentesService } from '../../services/incidentes.service';
 
 @Component({
   selector: 'app-solicitudes-disponibles',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './solicitudes-disponibles.html',
   styleUrl: './solicitudes-disponibles.scss',
 })
@@ -17,6 +18,16 @@ export class SolicitudesDisponibles implements OnInit {
   loading = true;
   errorMessage = '';
   incidentes: any[] = [];
+  readonly prioridadLabels: Record<string, string> = {
+    '1': 'Alta',
+    '2': 'Media',
+    '3': 'Baja',
+  };
+
+  getPriorityLabel(priority: unknown): string {
+    const key = `${priority ?? ''}`;
+    return this.prioridadLabels[key] || key || 'N/D';
+  }
 
   ngOnInit(): void {
     this.cargarIncidentes();

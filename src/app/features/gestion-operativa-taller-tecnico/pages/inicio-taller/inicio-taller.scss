@@ -1,0 +1,203 @@
+:host {
+  display: block;
+}
+
+.workshop-home {
+  display: grid;
+  gap: 22px;
+}
+
+.hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.7fr);
+  gap: 20px;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #15284a 0%, #2748b1 55%, #1596bf 100%);
+  color: #f7fbff;
+}
+
+.hero-kicker {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  opacity: 0.86;
+}
+
+.hero-copy h1,
+.section-heading h2,
+.activity-card h2,
+.next-step-card h2,
+.status-card h2 {
+  margin: 0 0 12px;
+  color: #132443;
+  letter-spacing: -0.04em;
+}
+
+.hero-copy h1,
+.status-card h2 {
+  color: #ffffff;
+}
+
+.hero-copy h1 {
+  max-width: 13ch;
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
+  line-height: 0.98;
+}
+
+.hero-copy > p {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(241, 248, 255, 0.88);
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.action-primary {
+  background: #17b4e5;
+  color: #ffffff;
+}
+
+.action-secondary {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.status-card,
+.metric-card,
+.quick-card,
+.activity-card,
+.next-step-card {
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #dde8f4;
+}
+
+.status-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.status-card p,
+.status-card span {
+  display: block;
+  color: rgba(241, 248, 255, 0.88);
+}
+
+.metrics-grid,
+.quick-grid,
+.bottom-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.metrics-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.metric-card {
+  padding: 20px;
+}
+
+.metric-card span,
+.quick-helper {
+  color: #73849d;
+  font-size: 0.92rem;
+}
+
+.metric-card strong {
+  display: block;
+  margin: 10px 0 6px;
+  color: #132443;
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+
+.metric-card small {
+  color: #5f7087;
+}
+
+.section-heading p,
+.activity-card p,
+.next-step-card p,
+.quick-card p {
+  margin: 0;
+  color: #5f7087;
+  line-height: 1.6;
+}
+
+.quick-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quick-card {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+}
+
+.quick-card h3 {
+  margin: 0;
+  color: #132443;
+  font-size: 1.4rem;
+  letter-spacing: -0.03em;
+}
+
+.quick-card a {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #eaf6ff;
+  color: #0f91e2;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.bottom-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+}
+
+.activity-card,
+.next-step-card {
+  padding: 22px;
+}
+
+.alert-box {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #fff1f1;
+  border: 1px solid #ffd5d9;
+  color: #b33a46;
+}
+
+@media (max-width: 1100px) {
+  .hero-card,
+  .metrics-grid,
+  .quick-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}

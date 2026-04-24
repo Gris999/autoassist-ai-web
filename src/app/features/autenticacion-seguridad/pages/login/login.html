@@ -1,44 +1,166 @@
-<div class="login-container">
-  <div class="login-card">
-    <h1>Iniciar sesión</h1>
-    <p>Panel web de talleres - AutoAssist AI</p>
+<div class="login-page ui-page-shell">
+  <div class="login-shell ui-split-shell">
+    <section class="login-aside">
+      <a class="brand ui-brand" routerLink="/">
+        <span class="brand-mark ui-brand-mark">A</span>
+        <span>AutoAssist AI</span>
+      </a>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="email">Correo</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="correo@taller.com"
-        />
-        @if (form.controls.email.touched && form.controls.email.invalid) {
-          <small class="error">Ingresa un correo válido.</small>
-        }
+      <span class="pill ui-kicker-pill">Acceso seguro por rol</span>
+
+      <h1>Inicia sesion y accede a la plataforma</h1>
+      <p class="aside-copy">
+        Ingresa como cliente, taller, tecnico o administrador para continuar con
+        la operacion y seguimiento del servicio.
+      </p>
+
+      <div class="aside-features">
+        <article class="feature-card">
+          <span class="feature-icon">✓</span>
+          <div>
+            <strong>Autenticacion centralizada</strong>
+            <p>El sistema redirige segun los permisos del usuario autenticado.</p>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon">⌁</span>
+          <div>
+            <strong>Bitacora de acceso</strong>
+            <p>Cada ingreso queda trazado para control y auditoria.</p>
+          </div>
+        </article>
       </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="********"
-        />
-        @if (form.controls.password.touched && form.controls.password.invalid) {
-          <small class="error">La contraseña es obligatoria.</small>
-        }
+      <div class="aside-orbits orbit-large"></div>
+      <div class="aside-orbits orbit-medium"></div>
+      <div class="aside-orbits orbit-small"></div>
+      <div class="aside-path"></div>
+    </section>
+
+    <section class="login-panel">
+      <div class="panel-header">
+        <a class="back-link ui-back-link" routerLink="/">Volver al inicio</a>
+        <h2>Bienvenido de nuevo</h2>
+        <p>Ingresa tus credenciales para acceder al sistema.</p>
       </div>
 
-      @if (errorMessage) {
-        <div class="alert-error">
-          {{ errorMessage }}
+      <div class="access-type">
+        <span class="section-label ui-field-label">Tipo de acceso</span>
+        <div class="access-options">
+          @for (access of accessTypes; track access.id) {
+            <button
+              type="button"
+              class="access-chip"
+              [class.active]="selectedAccess === access.id"
+              (click)="selectAccess(access.id)"
+            >
+              {{ access.label }}
+            </button>
+          }
         </div>
-      }
+      </div>
 
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Ingresando...' : 'Ingresar' }}
-      </button>
-    </form>
+      <form class="login-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group ui-form-group">
+          <label for="email">Correo electronico</label>
+          <div class="input-shell">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M4 6.5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Zm0 1.9v.17l8 5.3 8-5.3V8.4l-7.45 4.93a1 1 0 0 1-1.1 0L4 8.4Z"
+                />
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="usuario@correo.com"
+              autocomplete="email"
+            />
+          </div>
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small class="error ui-error-text">Ingresa un correo valido.</small>
+        }
+      </div>
+
+        <div class="form-group ui-form-group">
+          <label for="password">Contrasena</label>
+          <div class="input-shell">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2a4 4 0 0 1 4 4v2h.75A2.25 2.25 0 0 1 19 10.25v8.5A2.25 2.25 0 0 1 16.75 21h-9.5A2.25 2.25 0 0 1 5 18.75v-8.5A2.25 2.25 0 0 1 7.25 8H8V6a4 4 0 0 1 4-4Zm2 6V6a2 2 0 1 0-4 0v2h4Z"
+                />
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="************"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="visibility-button"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 5c4.9 0 9.03 2.94 10.8 7-1.77 4.06-5.9 7-10.8 7S2.97 16.06 1.2 12C2.97 7.94 7.1 5 12 5Zm0 2C8.6 7 5.64 8.93 4.05 12 5.64 15.07 8.6 17 12 17s6.36-1.93 7.95-5C18.36 8.93 15.4 7 12 7Zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5Z"
+                />
+              </svg>
+            </button>
+          </div>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <small class="error ui-error-text">La contrasena es obligatoria.</small>
+          }
+        </div>
+
+        <div class="form-meta">
+          <label class="checkbox-row">
+            <input type="checkbox" />
+            <span>Recordar sesion</span>
+          </label>
+
+          <a class="inline-link ui-inline-link" href="mailto:soporte@autoassist.ai">
+            Olvidaste tu contrasena?
+          </a>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert-error ui-feedback error">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button class="submit-button ui-submit-button" type="submit" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'Iniciar sesion' }}
+        </button>
+      </form>
+
+      <div class="register-copy">
+        <p>
+          No tienes cuenta?
+          <a class="inline-link ui-inline-link" routerLink="/registro/taller">
+            Registra tu taller
+          </a>
+        </p>
+        <span>
+          El acceso se habilita segun el rol y permisos asignados por la plataforma.
+        </span>
+      </div>
+
+      <article class="trust-card">
+        <span class="trust-icon">✓</span>
+        <div>
+          <strong>Acceso protegido</strong>
+          <p>Tus permisos se cargan automaticamente segun tu rol.</p>
+        </div>
+      </article>
+    </section>
   </div>
 </div>

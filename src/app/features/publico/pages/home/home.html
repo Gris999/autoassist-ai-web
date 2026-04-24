@@ -1,0 +1,202 @@
+<div class="home-page">
+  <header class="hero">
+    <nav class="topbar">
+      <a class="brand" routerLink="/">
+        <span class="brand-mark">A</span>
+        <span>AutoAssist AI</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#inicio">Inicio</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#roles">Roles</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#sobre-nosotros">Sobre nosotros</a>
+      </div>
+
+      <div class="nav-actions">
+        <a class="link-button" href="#contacto">Contacto</a>
+        <a class="primary-button light" routerLink="/login">Iniciar sesion</a>
+      </div>
+    </nav>
+
+    <section class="hero-content" id="inicio">
+      <div class="hero-copy">
+        <span class="pill">Asistencia vehicular inteligente</span>
+        <h1>Auxilio vehicular rapido con IA</h1>
+        <p>
+          Reporta incidentes, comparte tu ubicacion en tiempo real y conecta con
+          talleres y tecnicos disponibles cerca de ti.
+        </p>
+
+        <div class="hero-actions">
+          <a class="primary-button" routerLink="/login">Reportar incidente</a>
+          <a class="secondary-button" routerLink="/registro/taller">Registrar taller</a>
+        </div>
+
+        <div class="hero-stats">
+          <article>
+            <strong>4 actores</strong>
+            <span>clientes, talleres, tecnicos y administradores</span>
+          </article>
+          <article>
+            <strong>Tiempo real</strong>
+            <span>seguimiento, ubicacion y notificaciones del servicio</span>
+          </article>
+        </div>
+      </div>
+
+      <aside class="incident-card" aria-label="Vista previa del reporte">
+        <div class="incident-card__header">
+          <div>
+            <p class="eyebrow">Nuevo incidente</p>
+            <h2>Reporte guiado para una atencion mas rapida</h2>
+          </div>
+          <span class="status-dot"></span>
+        </div>
+
+        <div class="incident-card__body">
+          <article class="info-chip highlighted">
+            <div class="check-icon">✓</div>
+            <div>
+              <strong>Ubicacion detectada</strong>
+              <span>Av. Principal, Santa Cruz</span>
+            </div>
+          </article>
+
+          <article class="info-chip">
+            <strong>Tipo de incidente</strong>
+            <span>Falla mecanica y bateria descargada</span>
+          </article>
+
+          <article class="info-chip">
+            <strong>Evidencia adjunta</strong>
+            <span>Imagenes, audio y descripcion del cliente</span>
+          </article>
+
+          <article class="info-chip">
+            <strong>Resumen IA</strong>
+            <span>Prioridad media y sugerencia de taller electrico cercano</span>
+          </article>
+        </div>
+
+        <a class="primary-button full-width" routerLink="/login">Reportar incidente</a>
+      </aside>
+    </section>
+  </header>
+
+  <main class="content">
+    <section class="section" id="servicios">
+      <div class="section-heading">
+        <span class="section-kicker">Servicios</span>
+        <h2>Todo el auxilio vehicular en una sola plataforma</h2>
+        <p>
+          Gestiona reportes, atencion en ruta, seguimiento del servicio y
+          coordinacion entre clientes, talleres y tecnicos.
+        </p>
+      </div>
+
+      <div class="services-grid">
+        @for (service of services; track service) {
+          <article class="service-card">
+            <span class="service-icon"></span>
+            <p>{{ service }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="section" id="roles">
+      <div class="section-heading">
+        <span class="section-kicker">Accesos por rol</span>
+        <h2>Una experiencia coordinada para cada actor del sistema</h2>
+      </div>
+
+      <div class="roles-grid">
+        @for (role of roleCards; track role.title) {
+          <article class="role-card">
+            <span class="role-icon">{{ role.icon }}</span>
+            <h3>{{ role.title }}</h3>
+            <p>{{ role.description }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="section flow-section" id="como-funciona">
+      <div class="flow-card">
+        <div class="section-heading compact">
+          <span class="section-kicker">Como funciona</span>
+          <h2>Flujo principal del servicio</h2>
+          <p>
+            Desde el reporte inicial hasta el cierre del caso, cada paso queda
+            trazado para brindar seguimiento claro y oportuno.
+          </p>
+        </div>
+
+        <div class="timeline">
+          @for (step of steps; track step; let index = $index) {
+            <div class="timeline-step">
+              <span class="timeline-index">0{{ index + 1 }}</span>
+              <p>{{ step }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <article class="ai-card">
+        <span class="section-kicker">Asistencia inteligente</span>
+        <h3>IA que prioriza, resume y orienta la atencion</h3>
+        <p>
+          El sistema clasifica el incidente, estima prioridad y genera un
+          resumen util para acelerar la respuesta del taller.
+        </p>
+      </article>
+    </section>
+
+    <section class="section about-section" id="sobre-nosotros">
+      <div class="about-copy">
+        <span class="section-kicker">Sobre nosotros</span>
+        <h2>Disenado para coordinar auxilio vehicular con menos friccion</h2>
+        <p>
+          AutoAssist AI conecta a quienes necesitan ayuda en carretera con
+          talleres y tecnicos capaces de responder con mejor contexto, mejor
+          priorizacion y mejor seguimiento.
+        </p>
+        <p>
+          La plataforma unifica autenticacion, gestion operativa, monitoreo del
+          servicio e inteligencia de apoyo en una misma experiencia.
+        </p>
+      </div>
+
+      <div class="about-panel">
+        <article>
+          <strong>Incidentes mejor documentados</strong>
+          <p>Texto, audio, imagen y ubicacion en un mismo reporte.</p>
+        </article>
+        <article>
+          <strong>Operacion mas ordenada</strong>
+          <p>Asignacion, seguimiento y actualizacion del estado del servicio.</p>
+        </article>
+        <article>
+          <strong>Decision asistida por IA</strong>
+          <p>Clasificacion, prioridad y resumen para acelerar la respuesta.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="contacto">
+    <div>
+      <h2>Listo para ingresar al sistema</h2>
+      <p>Accede a tu cuenta para reportar, atender o monitorear servicios.</p>
+    </div>
+
+    <div class="footer-actions">
+      <a class="secondary-button light-outline" href="mailto:contacto@autoassist.ai">
+        Contacto
+      </a>
+      <a class="primary-button" routerLink="/login">Ir al login</a>
+    </div>
+  </footer>
+</div>

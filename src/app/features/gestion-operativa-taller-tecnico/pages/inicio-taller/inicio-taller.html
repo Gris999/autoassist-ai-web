@@ -1,0 +1,71 @@
+<div class="workshop-home">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <p class="hero-kicker">Centro operativo del taller</p>
+      <h1>Coordina solicitudes, tecnicos y recursos desde un solo lugar</h1>
+      <p>
+        Revisa incidentes disponibles, responde solicitudes y manten visible el
+        estado operativo del taller.
+      </p>
+
+      <div class="hero-actions">
+        <a class="action-primary" routerLink="/taller/solicitudes">
+          Ver incidentes disponibles
+        </a>
+        <a class="action-secondary" routerLink="/taller">Actualizar disponibilidad</a>
+      </div>
+    </div>
+
+    <article class="status-card">
+      <h2>Estado del taller</h2>
+      <p>Disponible para atencion</p>
+      <span>Radio de cobertura: 15 km</span>
+    </article>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert-box">{{ errorMessage() }}</div>
+  }
+
+  <section class="metrics-grid">
+    @for (card of metricCards(); track card.label) {
+      <article class="metric-card">
+        <span>{{ card.label }}</span>
+        <strong>{{ loading() ? '--' : card.value }}</strong>
+        <small>{{ card.helper }}</small>
+      </article>
+    }
+  </section>
+
+  <section class="quick-access">
+    <div class="section-heading">
+      <h2>Accesos rapidos del taller</h2>
+      <p>Solo se muestran modulos coherentes con la operacion diaria del taller.</p>
+    </div>
+
+    <div class="quick-grid">
+      @for (card of quickAccessCards; track card.title) {
+        <article class="quick-card">
+          <span class="quick-helper">{{ card.helper }}</span>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+          <a [routerLink]="card.route">Abrir</a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <article class="activity-card">
+      <h2>Actividad reciente</h2>
+      <p>{{ recentActivity() }}</p>
+    </article>
+
+    <article class="next-step-card">
+      <h2>Siguiente accion</h2>
+      <p>
+        {{ loading() ? 'Cargando pendientes...' : 'Responder solicitudes disponibles y preparar asignacion.' }}
+      </p>
+    </article>
+  </section>
+</div>

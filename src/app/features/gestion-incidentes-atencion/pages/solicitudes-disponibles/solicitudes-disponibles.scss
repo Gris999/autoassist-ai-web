@@ -1,30 +1,98 @@
 .page {
-  padding: 24px;
+  display: grid;
+  gap: 18px;
 }
 
 .error-box {
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
   background: #fdecea;
   color: #b3261e;
+  border: 1px solid #ffd5d9;
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-heading h1 {
+  margin: 0 0 8px;
+  color: #132443;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+}
+
+.page-heading p,
+.empty-state,
+.card p {
+  margin: 0;
+  color: #5f7087;
+  line-height: 1.6;
+}
+
+.page-heading button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid #cfe0ef;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f91e2;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .cards {
-  margin-top: 24px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 .card {
   background: white;
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  padding: 22px;
+  border: 1px solid #dde8f4;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
 }
 
 .card h3 {
-  margin-top: 0;
-  margin-bottom: 12px;
+  margin: 0;
+  color: #132443;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.priority-chip {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eef8ff;
+  color: #0f91e2;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.details-link {
+  display: inline-flex;
+  margin-top: 10px;
+  color: #0f91e2;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .page-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

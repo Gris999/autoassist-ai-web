@@ -1,0 +1,248 @@
+<div class="register-page ui-page-shell">
+  <div class="register-shell ui-split-shell">
+    <section class="register-aside">
+      <a class="brand ui-brand" routerLink="/">
+        <span class="brand-mark ui-brand-mark">A</span>
+        <span>AutoAssist AI</span>
+      </a>
+
+      <span class="pill ui-kicker-pill">Registro de taller</span>
+      <h1>Activa tu taller y comienza a recibir solicitudes</h1>
+      <p>
+        Completa la informacion principal del negocio para habilitar el acceso,
+        definir cobertura y continuar con el flujo operativo del taller.
+      </p>
+
+      <div class="benefits">
+        <article>
+          <strong>Cobertura configurada desde el inicio</strong>
+          <span>Define ubicacion base y radio de atencion del taller.</span>
+        </article>
+        <article>
+          <strong>Acceso inmediato al flujo operativo</strong>
+          <span>Al registrarte, el sistema inicia sesion y te lleva al panel.</span>
+        </article>
+        <article>
+          <strong>Preparado para asignar tecnicos</strong>
+          <span>Luego podras gestionar disponibilidad, servicios y unidades.</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="register-panel">
+      <div class="panel-header">
+        <a class="back-link ui-back-link" routerLink="/login">Ya tengo cuenta</a>
+        <h2>Registro de taller</h2>
+        <p>Usa los datos reales del responsable y del taller.</p>
+      </div>
+
+      @if (errorMessage) {
+        <div class="feedback ui-feedback error">{{ errorMessage }}</div>
+      }
+
+      @if (successMessage) {
+        <div class="feedback ui-feedback success">{{ successMessage }}</div>
+      }
+
+      @if (loadingCatalog) {
+        <div class="feedback ui-feedback neutral">Cargando catalogo de tipos de taller...</div>
+      }
+
+      <form class="register-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-grid ui-form-grid two-columns">
+          <div class="form-group ui-form-group">
+            <label for="nombres">Nombres</label>
+            <input class="ui-control" id="nombres" type="text" formControlName="nombres" />
+            @if (hasError('nombres')) {
+              <small class="error-text ui-error-text">Los nombres son obligatorios.</small>
+            }
+          </div>
+
+          <div class="form-group ui-form-group">
+            <label for="apellidos">Apellidos</label>
+            <input class="ui-control" id="apellidos" type="text" formControlName="apellidos" />
+            @if (hasError('apellidos')) {
+              <small class="error-text ui-error-text">Los apellidos son obligatorios.</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-grid ui-form-grid two-columns">
+          <div class="form-group ui-form-group">
+            <label for="celular">Celular</label>
+            <input class="ui-control" id="celular" type="tel" formControlName="celular" />
+            @if (hasError('celular')) {
+              <small class="error-text ui-error-text">Ingresa un celular valido.</small>
+            }
+          </div>
+
+          <div class="form-group ui-form-group">
+            <label for="email">Correo electronico</label>
+            <input class="ui-control" id="email" type="email" formControlName="email" />
+            @if (hasError('email')) {
+              <small class="error-text ui-error-text">Ingresa un correo valido.</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-grid ui-form-grid two-columns">
+          <div class="form-group ui-form-group">
+            <label for="password">Contrasena</label>
+            <input class="ui-control" id="password" type="password" formControlName="password" />
+            @if (hasError('password')) {
+              <small class="error-text ui-error-text">
+                La contrasena debe tener al menos 8 caracteres.
+              </small>
+            }
+          </div>
+
+          <div class="form-group ui-form-group">
+            <label for="id_tipo_taller">Tipo de taller</label>
+            <select
+              class="ui-control"
+              id="id_tipo_taller"
+              formControlName="id_tipo_taller"
+              [disabled]="loadingCatalog"
+            >
+              <option [ngValue]="0">Selecciona una opcion</option>
+              @for (type of workshopTypes; track type.id_tipo_taller) {
+                <option [ngValue]="type.id_tipo_taller">
+                  {{ type.descripcion || type.nombre }}
+                </option>
+              }
+            </select>
+            @if (hasError('id_tipo_taller')) {
+              <small class="error-text ui-error-text">Selecciona un tipo de taller.</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-grid ui-form-grid two-columns">
+          <div class="form-group ui-form-group">
+            <label for="nombre_taller">Nombre del taller</label>
+            <input class="ui-control" id="nombre_taller" type="text" formControlName="nombre_taller" />
+            @if (hasError('nombre_taller')) {
+              <small class="error-text ui-error-text">El nombre del taller es obligatorio.</small>
+            }
+          </div>
+
+          <div class="form-group ui-form-group">
+            <label for="nit">NIT</label>
+            <input class="ui-control" id="nit" type="text" formControlName="nit" />
+            @if (hasError('nit')) {
+              <small class="error-text ui-error-text">El NIT es obligatorio.</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-group ui-form-group">
+          <label for="direccion">Direccion</label>
+          <input
+            class="ui-control"
+            id="direccion"
+            type="text"
+            formControlName="direccion"
+            autocomplete="street-address"
+            placeholder="Busca una direccion o mueve el pin en el mapa"
+            (focus)="onAddressFocus()"
+          />
+          @if (searchingAddress) {
+            <small class="helper-text">Buscando direcciones...</small>
+          }
+          @if (searchResults.length > 0) {
+            <div class="search-results">
+              @for (result of searchResults; track result.display_name) {
+                <button
+                  type="button"
+                  class="search-result"
+                  (click)="selectSearchResult(result)"
+                >
+                  {{ result.display_name }}
+                </button>
+              }
+            </div>
+          }
+          @if (hasError('direccion')) {
+            <small class="error-text ui-error-text">La direccion es obligatoria.</small>
+          }
+        </div>
+
+        <div class="location-card">
+          <div class="location-card__header">
+            <div>
+              <strong>Ubicacion del taller</strong>
+              <p>
+                {{ locationStatus }}
+              </p>
+            </div>
+            <button type="button" class="ghost-button ui-ghost-button" (click)="useCurrentLocation()">
+              Usar mi ubicacion
+            </button>
+          </div>
+
+          <div #mapContainer class="map-canvas" [class.is-ready]="locationReady"></div>
+
+          <div class="coverage-row">
+            <div class="form-group ui-form-group">
+              <label for="radio_cobertura_km">Radio de cobertura (km)</label>
+              <input
+                class="ui-control"
+                id="radio_cobertura_km"
+                type="number"
+                min="1"
+                formControlName="radio_cobertura_km"
+              />
+              @if (hasError('radio_cobertura_km')) {
+                <small class="error-text ui-error-text">Ingresa un radio mayor a 0.</small>
+              }
+            </div>
+
+            <div class="helper-card">
+              <strong>Sincronizacion automatica</strong>
+              <span>
+                Al mover el pin o elegir una direccion, actualizamos direccion,
+                latitud y longitud al instante.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid ui-form-grid three-columns coordinates-grid">
+          <div class="form-group ui-form-group">
+            <label for="latitud">Latitud</label>
+            <input
+              class="ui-control"
+              id="latitud"
+              type="number"
+              step="any"
+              formControlName="latitud"
+              readonly
+            />
+            @if (hasError('latitud')) {
+              <small class="error-text ui-error-text">Ingresa una latitud valida.</small>
+            }
+          </div>
+
+          <div class="form-group ui-form-group">
+            <label for="longitud">Longitud</label>
+            <input
+              class="ui-control"
+              id="longitud"
+              type="number"
+              step="any"
+              formControlName="longitud"
+              readonly
+            />
+            @if (hasError('longitud')) {
+              <small class="error-text ui-error-text">Ingresa una longitud valida.</small>
+            }
+          </div>
+        </div>
+
+        <button class="submit-button ui-submit-button" type="submit" [disabled]="submitting || loadingCatalog">
+          {{ submitting ? 'Registrando...' : 'Registrar taller' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

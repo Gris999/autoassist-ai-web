@@ -1,9 +1,14 @@
 <div class="page">
-  <h1>Solicitudes disponibles</h1>
-  <p>Aquí verás los incidentes disponibles para el taller.</p>
+  <div class="page-heading">
+    <div>
+      <h1>Incidentes disponibles</h1>
+      <p>Solicitudes listas para que el taller revise, responda y organice la atencion.</p>
+    </div>
+    <button type="button" (click)="cargarIncidentes()">Actualizar</button>
+  </div>
 
   @if (loading) {
-    <p>Cargando incidentes...</p>
+    <p class="empty-state">Cargando incidentes...</p>
   }
 
   @if (errorMessage) {
@@ -13,19 +18,27 @@
   }
 
   @if (!loading && !errorMessage && incidentes.length === 0) {
-    <p>No hay incidentes disponibles por ahora.</p>
+    <p class="empty-state">No hay incidentes disponibles por ahora.</p>
   }
 
   @if (!loading && incidentes.length > 0) {
     <div class="cards">
       @for (incidente of incidentes; track $index) {
         <div class="card">
-          <h3>{{ incidente.titulo || 'Incidente sin título' }}</h3>
+          <div class="card-header">
+            <h3>{{ incidente.titulo || 'Incidente sin titulo' }}</h3>
+            <span class="priority-chip">
+              Prioridad {{ getPriorityLabel(incidente.id_prioridad) }}
+            </span>
+          </div>
 
-          <p><strong>ID:</strong> {{ incidente.id_incidente || 'N/D' }}</p>
-          <p><strong>Descripción:</strong> {{ incidente.descripcion_texto || 'Sin descripción' }}</p>
-          <p><strong>Estado:</strong> {{ incidente.id_estado_servicio_actual || 'N/D' }}</p>
-          <p><strong>Prioridad:</strong> {{ incidente.id_prioridad || 'N/D' }}</p>
+          <p><strong>ID del incidente:</strong> {{ incidente.id_incidente || 'N/D' }}</p>
+          <p><strong>Descripcion:</strong> {{ incidente.descripcion_texto || 'Sin descripcion' }}</p>
+          <p><strong>Estado actual:</strong> {{ incidente.id_estado_servicio_actual || 'N/D' }}</p>
+
+          <a class="details-link" [routerLink]="['/taller/solicitudes', incidente.id_incidente]">
+            Ver detalle
+          </a>
         </div>
       }
     </div>

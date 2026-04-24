@@ -1,0 +1,65 @@
+<div class="taller-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/taller">
+      <span class="brand-mark">A</span>
+      <div>
+        <strong>AutoAssist AI</strong>
+        <span>Panel taller</span>
+      </div>
+    </a>
+
+    <section class="workshop-card">
+      <span class="workshop-icon">T</span>
+      <div>
+        <strong>Taller San Miguel</strong>
+        <span>Cuenta habilitada</span>
+      </div>
+    </section>
+
+    <nav class="sidebar-nav">
+      @for (group of navGroups; track group.title) {
+        <section class="nav-group">
+          <h2>{{ group.title }}</h2>
+          <div class="nav-items">
+            @for (item of group.items; track item.label) {
+              <a
+                class="nav-item"
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.route === '/taller' }"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </div>
+        </section>
+      }
+    </nav>
+
+    <button class="logout-button" type="button" (click)="logout()">
+      Cerrar sesion
+    </button>
+  </aside>
+
+  <div class="content-shell">
+    <header class="topbar">
+      <div>
+        <h1>Inicio del taller</h1>
+        <p>
+          Gestiona solicitudes, tecnicos, unidades moviles y disponibilidad operativa.
+        </p>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="search-box">
+          <input type="text" placeholder="Buscar incidente o tecnico" />
+        </div>
+        <span class="avatar">T</span>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
