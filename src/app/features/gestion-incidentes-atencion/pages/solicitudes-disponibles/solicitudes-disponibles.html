@@ -2,7 +2,7 @@
   <div class="page-heading">
     <div>
       <h1>Incidentes disponibles</h1>
-      <p>Solicitudes listas para que el taller revise, responda y organice la atencion.</p>
+      <p>{{ incidentes.length }} disponibles</p>
     </div>
     <button type="button" (click)="cargarIncidentes()">Actualizar</button>
   </div>
@@ -32,9 +32,12 @@
             </span>
           </div>
 
-          <p><strong>ID del incidente:</strong> {{ incidente.id_incidente || 'N/D' }}</p>
-          <p><strong>Descripcion:</strong> {{ incidente.descripcion_texto || 'Sin descripcion' }}</p>
-          <p><strong>Estado actual:</strong> {{ incidente.id_estado_servicio_actual || 'N/D' }}</p>
+          <div class="card-meta">
+            <span>#{{ incidente.id_incidente || 'N/D' }}</span>
+            <span>Estado {{ incidente.id_estado_servicio_actual || 'N/D' }}</span>
+          </div>
+
+          <p>{{ incidente.descripcion_texto || 'Sin descripcion' }}</p>
 
           <a class="details-link" [routerLink]="['/taller/solicitudes', incidente.id_incidente]">
             Ver detalle

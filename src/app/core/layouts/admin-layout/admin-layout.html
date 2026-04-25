@@ -1,0 +1,84 @@
+<div class="admin-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/admin">
+      <span class="brand-mark">A</span>
+      <div>
+        <strong>AutoAssist AI</strong>
+        <span>Panel administrador</span>
+      </div>
+    </a>
+
+    <section class="admin-card">
+      <span class="admin-icon">Ad</span>
+      <div>
+        <strong>Administrador general</strong>
+        <span>Supervision habilitada</span>
+      </div>
+    </section>
+
+    <a
+      class="home-link"
+      [routerLink]="homeRoute"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Inicio
+    </a>
+
+    <nav class="sidebar-nav">
+      @for (group of navGroups; track group.title) {
+        <section class="nav-group">
+          <button
+            class="group-toggle"
+            type="button"
+            (click)="toggleGroup(group.title)"
+            [class.expanded]="activeGroup() === group.title"
+            [attr.aria-expanded]="activeGroup() === group.title"
+          >
+            <span>{{ group.title }}</span>
+            <span class="group-arrow">{{ activeGroup() === group.title ? '−' : '+' }}</span>
+          </button>
+
+          @if (activeGroup() === group.title) {
+            <div class="nav-items">
+              @for (item of group.items; track item.label) {
+                <a
+                  class="nav-item"
+                  [routerLink]="item.route"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+                >
+                  {{ item.label }}
+                </a>
+              }
+            </div>
+          }
+        </section>
+      }
+    </nav>
+
+    <button class="logout-button" type="button" (click)="logout()">
+      Cerrar sesion
+    </button>
+  </aside>
+
+  <div class="content-shell">
+    <header class="topbar">
+      <div>
+        <h1>Panel administrativo</h1>
+        <p>Supervisa seguridad, historial del servicio y modulos estrategicos del sistema.</p>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="search-box">
+          <input type="text" placeholder="Buscar usuario o incidente" />
+        </div>
+        <span class="avatar">Ad</span>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

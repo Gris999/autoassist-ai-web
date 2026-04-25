@@ -1,0 +1,327 @@
+<div class="availability-page">
+  <header class="page-header">
+    <div>
+      <h2>Disponibilidad del taller</h2>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-box">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="success-box">{{ successMessage() }}</div>
+  }
+
+  <form class="availability-form" [formGroup]="form" (ngSubmit)="saveAvailability()">
+    <section class="availability-card hero">
+      <div class="availability-copy">
+        <span class="card-kicker">Estado del taller</span>
+        <h3>{{ availabilityMessage }}</h3>
+      </div>
+
+      <div class="availability-control">
+        <label class="availability-toggle" [class.is-disabled]="loading() || saving()">
+          <input type="checkbox" formControlName="disponible" [disabled]="loading() || saving()" />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-label">
+            {{ form.controls.disponible.value ? 'Disponible' : 'No disponible' }}
+          </span>
+        </label>
+
+        @if (saving()) {
+          <small class="status-helper">Guardando disponibilidad...</small>
+        }
+      </div>
+    </section>
+
+    <section class="availability-card">
+      <div class="section-heading">
+        <h3>Cobertura</h3>
+        <p>Direccion base y radio.</p>
+      </div>
+
+      <div class="coverage-summary-card">
+        <div>
+          <strong>{{ form.controls.direccion.value }}</strong>
+          <p>{{ coverageSummary }}</p>
+        </div>
+        <button type="button" class="secondary-button" (click)="openLocationEditor()">
+          Definir ubicacion
+        </button>
+      </div>
+
+      @if (locationEditorOpen()) {
+        <div class="location-card compact">
+          <div class="location-card__header">
+            <div>
+              <strong>Editar ubicacion del taller</strong>
+              <p>{{ locationStatus() }}</p>
+            </div>
+
+            <button type="button" class="secondary-button ghost" (click)="closeLocationEditor()">
+              Minimizar
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <div class="field search-field">
+              <label for="direccion">Direccion</label>
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                autocomplete="street-address"
+                placeholder="Escribe una direccion para buscarla"
+                (focus)="onAddressFocus()"
+              />
+              @if (searchingAddress()) {
+                <small class="helper-text">Buscando direcciones...</small>
+              }
+              @if (searchResults().length > 0) {
+                <div class="search-results">
+                  @for (result of searchResults(); track result.display_name) {
+                    <button type="button" class="search-result" (click)="selectSearchResult(result)">
+                      {{ result.display_name }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button type="button" class="secondary-button" (click)="useCurrentLocation()">
+              Usar mi ubicacion
+            </button>
+            <button type="button" class="secondary-button" (click)="openManualMap()">
+              Agregar manualmente en mapa
+            </button>
+          </div>
+
+          @if (manualMapOpen()) {
+            <div #mapContainer class="map-canvas" [class.is-ready]="locationReady()"></div>
+          }
+
+          <div class="coverage-row">
+            <div class="field">
+              <label for="radio_cobertura_km">Radio de cobertura (km)</label>
+              <input
+                id="radio_cobertura_km"
+                type="number"
+                min="1"
+                formControlName="radio_cobertura_km"
+              />
+            </div>
+
+            <div class="helper-card">
+              <strong>Sincronizacion automatica</strong>
+              <span>
+                Puedes escribir una direccion o mover el pin.
+              </span>
+            </div>
+          </div>
+
+          <div class="form-grid two-columns coordinates-grid">
+            <div class="field">
+              <label for="latitud">Latitud</label>
+              <input
+                id="latitud"
+                type="number"
+                step="any"
+                formControlName="latitud"
+                readonly
+              />
+            </div>
+
+            <div class="field">
+              <label for="longitud">Longitud</label>
+              <input
+                id="longitud"
+                type="number"
+                step="any"
+                formControlName="longitud"
+                readonly
+              />
+            </div>
+          </div>
+
+          <div class="editor-footer">
+            <button type="submit" class="primary-button" [disabled]="loading() || saving()">
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+
+    <section class="availability-card">
+      <div class="section-heading with-action">
+        <div>
+          <h3>Horarios de atencion</h3>
+          <p>Resumen semanal.</p>
+        </div>
+      </div>
+
+      <div class="schedule-summary-card">
+        <div class="helper-card">
+          <strong>Resumen de horarios</strong>
+          <p class="summary-copy">
+            @if (activeDaysCount > 0) {
+              {{ activeDaysCount }} dias con horario activo
+            } @else {
+              Aun no hay horarios configurados
+            }
+          </p>
+          <div class="summary-actions">
+            <button type="button" class="secondary-button ghost" (click)="toggleScheduleSummary()">
+              {{ scheduleSummaryOpen() ? 'Ocultar resumen' : 'Ver resumen' }}
+            </button>
+          </div>
+          @if (activeScheduleSummary.length > 0 && scheduleSummaryOpen()) {
+            <div class="schedule-summary-list">
+              @for (item of activeScheduleSummary; track item.day) {
+                <div class="schedule-summary-item">
+                  <span>{{ item.day }}</span>
+                  <small>{{ item.ranges.join(' | ') }}</small>
+                </div>
+              }
+            </div>
+          } @else if (activeScheduleSummary.length === 0) {
+            <span>Aun no hay dias activos configurados.</span>
+          }
+        </div>
+
+        <button type="button" class="secondary-button" (click)="openScheduleEditor()">
+          Definir horarios
+        </button>
+      </div>
+
+      @if (scheduleEditorOpen()) {
+        <div class="schedule-overview">
+          <div class="quick-schedule-card" [formGroup]="bulkScheduleForm">
+            <div class="section-heading compact">
+              <div>
+                <h3>Carga rapida</h3>
+                <p>Aplica el mismo horario a varios dias sin cargarlos uno por uno.</p>
+              </div>
+            </div>
+
+            <div class="bulk-days">
+              @for (day of weekDays; track day) {
+                <button
+                  type="button"
+                  class="day-chip"
+                  [class.is-selected]="selectedBulkDays().includes(day)"
+                  (click)="toggleBulkDay(day)"
+                >
+                  {{ day }}
+                </button>
+              }
+            </div>
+
+            <div class="bulk-actions">
+              <button type="button" class="secondary-button ghost" (click)="selectAllDays()">
+                Todos
+              </button>
+              <button type="button" class="secondary-button ghost" (click)="clearSelectedDays()">
+                Limpiar
+              </button>
+            </div>
+
+            <div class="form-grid three-columns">
+              <div class="field">
+                <label for="bulk-inicio">Hora inicio</label>
+                <input id="bulk-inicio" type="time" step="1" formControlName="hora_inicio" />
+              </div>
+
+              <div class="field">
+                <label for="bulk-fin">Hora fin</label>
+                <input id="bulk-fin" type="time" step="1" formControlName="hora_fin" />
+              </div>
+
+              <label class="checkbox-field inline">
+                <input type="checkbox" formControlName="estado" />
+                <span>Activo</span>
+              </label>
+            </div>
+
+            <button type="button" class="secondary-button apply-button" (click)="applyScheduleToSelectedDays()">
+              Aplicar a dias seleccionados
+            </button>
+          </div>
+
+          <div class="section-heading with-action">
+            <div>
+              <h3>Edicion detallada</h3>
+              <p>Agrega, ajusta o quita tramos individuales cuando necesites mas precision.</p>
+            </div>
+
+            <div class="editor-actions">
+              <button type="button" class="secondary-button" (click)="addSchedule()">
+                Agregar horario
+              </button>
+              <button type="button" class="secondary-button ghost" (click)="closeScheduleEditor()">
+                Minimizar
+              </button>
+            </div>
+          </div>
+
+          @if (horarios.length === 0) {
+            <p class="empty-state">
+              Aun no hay horarios cargados. Agrega al menos un tramo si quieres operar por horarios.
+            </p>
+          }
+
+          <div class="schedule-list">
+            @for (scheduleGroup of scheduleControls; track trackByIndex($index); let i = $index) {
+              <div class="schedule-item" [formGroup]="scheduleGroup">
+                <div class="field">
+                  <label [for]="'dia-' + i">Dia</label>
+                  <select [id]="'dia-' + i" formControlName="dia_semana">
+                    @for (day of weekDays; track day) {
+                      <option [value]="day">{{ day }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label [for]="'inicio-' + i">Hora inicio</label>
+                  <input [id]="'inicio-' + i" type="time" step="1" formControlName="hora_inicio" />
+                </div>
+
+                <div class="field">
+                  <label [for]="'fin-' + i">Hora fin</label>
+                  <input [id]="'fin-' + i" type="time" step="1" formControlName="hora_fin" />
+                </div>
+
+                <label class="checkbox-field">
+                  <input type="checkbox" formControlName="estado" />
+                  <span>Activo</span>
+                </label>
+
+                <button type="button" class="danger-button" (click)="removeSchedule(i)">
+                  Quitar
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="editor-footer">
+            <button class="primary-button" type="submit" [disabled]="loading() || saving()">
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+
+    <div class="actions-row">
+      <button class="primary-button" type="submit" [disabled]="loading() || saving()">
+        Guardar disponibilidad
+      </button>
+    </div>
+  </form>
+</div>

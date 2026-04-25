@@ -1,60 +1,98 @@
-<div class="taller-shell">
-  <aside class="sidebar">
-    <a class="brand" routerLink="/taller">
-      <span class="brand-mark">A</span>
-      <div>
-        <strong>AutoAssist AI</strong>
-        <span>Panel taller</span>
-      </div>
-    </a>
+<div class="taller-shell" [class.sidebar-is-collapsed]="sidebarCollapsed()">
+  <aside class="sidebar" [class.is-collapsed]="sidebarCollapsed()">
+    <div class="sidebar-top">
+      <a class="brand" routerLink="/taller">
+        <span class="brand-mark">A</span>
+        @if (!sidebarCollapsed()) {
+          <div>
+            <strong>AutoAssist AI</strong>
+            <span>Panel taller</span>
+          </div>
+        }
+      </a>
+
+      <button
+        class="sidebar-toggle"
+        type="button"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expandir menu' : 'Colapsar menu'"
+      >
+        {{ sidebarCollapsed() ? '›' : '‹' }}
+      </button>
+    </div>
 
     <section class="workshop-card">
-      <span class="workshop-icon">T</span>
-      <div>
-        <strong>Taller San Miguel</strong>
-        <span>Cuenta habilitada</span>
-      </div>
+      <span class="workshop-icon">{{ workshopProfile().initials }}</span>
+      @if (!sidebarCollapsed()) {
+        <div>
+          <strong>{{ workshopProfile().name }}</strong>
+          <span>{{ workshopProfile().subtitle }}</span>
+        </div>
+      }
     </section>
 
     <nav class="sidebar-nav">
       @for (group of navGroups; track group.title) {
         <section class="nav-group">
-          <h2>{{ group.title }}</h2>
-          <div class="nav-items">
-            @for (item of group.items; track item.label) {
-              <a
-                class="nav-item"
-                [routerLink]="item.route"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.route === '/taller' }"
-              >
-                {{ item.label }}
-              </a>
+          <button
+            class="group-toggle"
+            type="button"
+            (click)="toggleGroup(group.title)"
+            [class.expanded]="activeGroup() === group.title"
+            [attr.aria-expanded]="activeGroup() === group.title"
+            [attr.title]="sidebarCollapsed() ? group.title : null"
+          >
+            @if (sidebarCollapsed()) {
+              <span class="group-badge">{{ group.shortLabel }}</span>
+            } @else {
+              <span class="group-title">{{ group.title }}</span>
+              <span class="group-arrow">{{ activeGroup() === group.title ? '−' : '+' }}</span>
             }
-          </div>
+          </button>
+
+          @if (activeGroup() === group.title && !sidebarCollapsed()) {
+            <div class="nav-items">
+              @for (item of group.items; track item.label) {
+                @if (item.route) {
+                  <a
+                    class="nav-item"
+                    [routerLink]="item.route"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: item.route === '/taller' }"
+                  >
+                    <span>{{ item.label }}</span>
+                    @if (item.note) {
+                      <small class="item-note">{{ item.note }}</small>
+                    }
+                  </a>
+                } @else {
+                  <button
+                    class="nav-item action-item"
+                    type="button"
+                    [disabled]="item.disabled"
+                    (click)="handleAction(item.action)"
+                  >
+                    <span>{{ item.label }}</span>
+                    @if (item.note) {
+                      <small class="item-note">{{ item.note }}</small>
+                    }
+                  </button>
+                }
+              }
+            </div>
+          }
         </section>
       }
     </nav>
-
-    <button class="logout-button" type="button" (click)="logout()">
-      Cerrar sesion
-    </button>
   </aside>
 
   <div class="content-shell">
     <header class="topbar">
-      <div>
-        <h1>Inicio del taller</h1>
-        <p>
-          Gestiona solicitudes, tecnicos, unidades moviles y disponibilidad operativa.
-        </p>
-      </div>
-
       <div class="topbar-actions">
         <div class="search-box">
           <input type="text" placeholder="Buscar incidente o tecnico" />
         </div>
-        <span class="avatar">T</span>
+        <span class="avatar">{{ workshopProfile().initials }}</span>
       </div>
     </header>
 

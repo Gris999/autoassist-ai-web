@@ -1,0 +1,21 @@
+<div class="admin-home">
+  <header class="hero-card">
+    <div>
+      <p class="hero-kicker">Supervision administrativa</p>
+      <h2>Controla seguridad, trazabilidad y modulos estrategicos</h2>
+      <p>
+        Este panel centraliza la supervision del sistema, el historial global
+        del servicio y los componentes estrategicos de analisis y comisiones.
+      </p>
+    </div>
+  </header>
+
+  <section class="cards-grid">
+    @for (card of cards; track card.title) {
+      <article class="admin-card-item">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+      </article>
+    }
+  </section>
+</div>

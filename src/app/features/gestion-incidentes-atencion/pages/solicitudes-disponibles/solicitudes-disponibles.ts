@@ -39,13 +39,11 @@ export class SolicitudesDisponibles implements OnInit {
 
     this.incidentesService.getIncidentesDisponibles().subscribe({
       next: (response) => {
-        console.log('Incidentes disponibles:', response);
         this.incidentes = response ?? [];
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error al cargar incidentes:', error);
         this.errorMessage = 'No se pudieron cargar los incidentes disponibles.';
         this.loading = false;
         this.cdr.detectChanges();

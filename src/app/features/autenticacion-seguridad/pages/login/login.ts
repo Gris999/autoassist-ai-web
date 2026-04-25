@@ -61,14 +61,45 @@ export class Login {
     this.authService.login(payload).subscribe({
       next: (response) => {
         this.tokenService.setToken(response.access_token);
-        this.loading = false;
-        this.router.navigate(['/taller']);
+        this.resolveCurrentUserAndRedirect();
       },
       error: (error) => {
         console.error('Error de login:', error);
-        this.errorMessage = 'Credenciales inválidas o error de conexión.';
+        this.errorMessage = 'Credenciales invalidas o error de conexion.';
         this.loading = false;
-      }
+      },
+    });
+  }
+
+  private resolveCurrentUserAndRedirect(): void {
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        this.tokenService.setCurrentUser(user);
+        this.loading = false;
+
+        const userRoles = Array.isArray(user.roles)
+          ? user.roles.map((role) => role.toLowerCase())
+          : [];
+        const route = userRoles
+          .map((role) => this.tokenService.getDashboardRoute(role))
+          .find((value) => !!value);
+
+        if (!route) {
+          this.tokenService.clearSession();
+          this.errorMessage =
+            'No pudimos determinar el panel para este usuario. Verifica su rol.';
+          return;
+        }
+
+        this.router.navigate([route]);
+      },
+      error: (error) => {
+        console.error('Error al obtener el usuario autenticado:', error);
+        this.tokenService.clearSession();
+        this.errorMessage =
+          'Se inicio sesion, pero no pudimos obtener tu perfil. Intenta nuevamente.';
+        this.loading = false;
+      },
     });
   }
 }
