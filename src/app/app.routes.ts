@@ -4,6 +4,8 @@ import { AdminLayout } from './core/layouts/admin-layout/admin-layout';
 import { authGuard } from './core/guards/auth.guard';
 import { Login } from './features/autenticacion-seguridad/pages/login/login';
 import { RegisterWorkshop } from './features/autenticacion-seguridad/pages/register-workshop/register-workshop';
+import { BitacoraSistema } from './features/administracion/pages/bitacora-sistema/bitacora-sistema';
+import { GestionarRoles } from './features/administracion/pages/gestionar-roles/gestionar-roles';
 import { InicioAdmin } from './features/administracion/pages/inicio-admin/inicio-admin';
 import { DetalleSolicitud } from './features/gestion-incidentes-atencion/pages/detalle-solicitud/detalle-solicitud';
 import { SolicitudesDisponibles } from './features/gestion-incidentes-atencion/pages/solicitudes-disponibles/solicitudes-disponibles';
@@ -61,7 +63,20 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        redirectTo: 'inicio',
+        pathMatch: 'full',
+      },
+      {
+        path: 'inicio',
         component: InicioAdmin,
+      },
+      {
+        path: 'roles',
+        component: GestionarRoles,
+      },
+      {
+        path: 'bitacora',
+        component: BitacoraSistema,
       },
     ],
   },

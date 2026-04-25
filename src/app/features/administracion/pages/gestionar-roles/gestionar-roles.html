@@ -1,0 +1,267 @@
+<div class="roles-page">
+  <header class="hero-card roles-hero">
+    <div class="hero-copy">
+      <p class="hero-kicker">Autenticacion y seguridad</p>
+      <h2>Gestiona roles de usuario desde una vista centralizada</h2>
+      <p>
+        Consulta usuarios, revisa la asignacion actual de permisos y reemplaza
+        los roles completos de cada cuenta sin salir del panel administrativo.
+      </p>
+    </div>
+
+    <article class="hero-note">
+      <span class="hero-note__label">Flujo backend</span>
+      <strong>Listado, consulta y reemplazo completo</strong>
+      <p>
+        Esta pantalla no crea roles nuevos. Solo reasigna los roles existentes
+        y registra el cambio en la bitacora del sistema.
+      </p>
+    </article>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="feedback-box error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="feedback-box success">{{ successMessage() }}</div>
+  }
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-pill">Usuarios</span>
+      <strong>{{ totalUsuarios() }}</strong>
+      <p>Registros disponibles para administracion.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Activos</span>
+      <strong>{{ totalActivos() }}</strong>
+      <p>Cuentas habilitadas para operar.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Admins</span>
+      <strong>{{ totalAdmins() }}</strong>
+      <p>Usuarios con privilegios de supervision.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Multirol</span>
+      <strong>{{ totalMultirol() }}</strong>
+      <p>Usuarios con mas de un rol asignado.</p>
+    </article>
+  </section>
+
+  <div class="roles-layout">
+    <section class="content-card">
+      <div class="section-heading">
+        <div>
+          <span class="section-pill">Usuarios con roles</span>
+          <h3>Asignacion actual</h3>
+          <p>Busca por nombre, apellido, correo, celular o rol antes de editar.</p>
+        </div>
+
+        <button type="button" class="secondary-button" (click)="loadData()">
+          Actualizar vista
+        </button>
+      </div>
+
+      <form class="filters-grid" [formGroup]="filtersForm">
+        <label class="field">
+          <span>Buscar usuario</span>
+          <input
+            type="search"
+            formControlName="search"
+            placeholder="Ej. Juan, admin, tecnico, correo..."
+          />
+        </label>
+
+        <label class="field">
+          <span>Estado</span>
+          <select formControlName="status">
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </label>
+      </form>
+
+      @if (loading()) {
+        <div class="empty-card">
+          <strong>Cargando usuarios y roles...</strong>
+          <p>Estamos consultando el catalogo y la asignacion actual.</p>
+        </div>
+      } @else if (users().length === 0) {
+        <div class="empty-card">
+          <strong>Sin usuarios disponibles</strong>
+          <p>No hay registros para gestionar roles en este momento.</p>
+        </div>
+      } @else if (filteredUsers().length === 0) {
+        <div class="empty-card">
+          <strong>Sin coincidencias</strong>
+          <p>Prueba con otros filtros o limpia la busqueda actual.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Contacto</th>
+                <th>Estado</th>
+                <th>Roles</th>
+                <th>Accion</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (user of filteredUsers(); track trackUser($index, user)) {
+                <tr [class.is-selected]="selectedUserId() === user.id_usuario">
+                  <td>
+                    <button type="button" class="user-trigger" (click)="selectUser(user)">
+                      <span class="user-avatar">{{ getInitials(user) }}</span>
+                      <span class="user-copy">
+                        <strong>{{ getFullName(user) }}</strong>
+                        <small>#{{ user.id_usuario }}</small>
+                      </span>
+                    </button>
+                  </td>
+
+                  <td>
+                    <div class="contact-copy">
+                      <strong>{{ user.email }}</strong>
+                      <small>{{ user.celular || 'Sin celular registrado' }}</small>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="status-pill" [class.inactive]="!user.estado">
+                      {{ getStatusLabel(user.estado) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="badge-list">
+                      @for (role of user.roles; track role) {
+                        <span [class]="getRoleBadgeClass(role)">{{ role }}</span>
+                      }
+                    </div>
+                  </td>
+
+                  <td>
+                    <button type="button" class="table-action" (click)="selectUser(user)">
+                      Editar roles
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <div class="side-stack">
+      <section class="content-card">
+        <div class="section-heading">
+          <div>
+            <span class="section-pill">Catalogo de roles</span>
+            <h3>Roles disponibles</h3>
+            <p>Se cargan desde el backend para mantener consistencia.</p>
+          </div>
+
+          <span class="count-badge">{{ rolesCatalog().length }}</span>
+        </div>
+
+        <div class="catalog-grid">
+          @for (role of rolesCatalog(); track trackRole($index, role)) {
+            <article class="catalog-card">
+              <strong>{{ role.nombre }}</strong>
+              <p>{{ role.descripcion || 'Sin descripcion registrada.' }}</p>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="content-card">
+        <div class="section-heading">
+          <div>
+            <span class="section-pill">Editor de roles</span>
+            <h3>Actualizar asignacion</h3>
+            <p>El PATCH reemplaza completamente la lista de roles del usuario.</p>
+          </div>
+        </div>
+
+        @if (selectedUser(); as user) {
+          <div class="selected-user-card">
+            <div class="selected-user-head">
+              <span class="user-avatar user-avatar--large">{{ getInitials(user) }}</span>
+              <div>
+                <strong>{{ getFullName(user) }}</strong>
+                <span>{{ user.email }}</span>
+              </div>
+            </div>
+
+            <div class="selected-user-meta">
+              <div>
+                <small>Estado</small>
+                <strong>{{ getStatusLabel(user.estado) }}</strong>
+              </div>
+              <div>
+                <small>Roles elegidos</small>
+                <strong>{{ selectedRolesCount() }}</strong>
+              </div>
+              <div>
+                <small>Cambios pendientes</small>
+                <strong>{{ hasPendingChanges() ? 'Si' : 'No' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <form class="roles-form" [formGroup]="roleForm">
+            <div class="checkbox-grid">
+              @for (role of rolesCatalog(); track trackRole($index, role)) {
+                <label class="role-option" [class.selected]="isRoleSelected(role.nombre)">
+                  <input
+                    type="checkbox"
+                    [checked]="isRoleSelected(role.nombre)"
+                    (change)="toggleRole(role.nombre, $event)"
+                  />
+                  <div>
+                    <strong>{{ role.nombre }}</strong>
+                    <span>{{ role.descripcion || 'Rol disponible para asignacion.' }}</span>
+                  </div>
+                </label>
+              }
+            </div>
+
+            @if (selectedRolesCount() === 0) {
+              <p class="helper-error">Debes seleccionar al menos un rol para continuar.</p>
+            }
+
+            <div class="form-actions">
+              <button
+                type="button"
+                class="primary-button"
+                [disabled]="saving() || selectedRolesCount() === 0 || !hasPendingChanges()"
+                (click)="saveRoles()"
+              >
+                {{ saving() ? 'Guardando cambios...' : 'Guardar cambios' }}
+              </button>
+
+              <button type="button" class="secondary-button" (click)="cancelEdit()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        } @else {
+          <div class="empty-card">
+            <strong>Selecciona un usuario</strong>
+            <p>Elige una fila de la tabla para asignar o actualizar sus roles.</p>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</div>

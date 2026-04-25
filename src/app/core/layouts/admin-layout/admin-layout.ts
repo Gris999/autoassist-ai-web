@@ -27,14 +27,14 @@ export class AdminLayout {
   private readonly router = inject(Router);
 
   readonly activeGroup = signal('Autenticacion y Seguridad');
-  readonly homeRoute = '/admin';
+  readonly homeRoute = '/admin/inicio';
 
   readonly navGroups: NavGroup[] = [
     {
       title: 'Autenticacion y Seguridad',
       items: [
-        { label: 'Roles de usuario', route: '/admin' },
-        { label: 'Bitacora del sistema', route: '/admin' },
+        { label: 'Roles de usuario', route: '/admin/roles' },
+        { label: 'Bitacora del sistema', route: '/admin/bitacora' },
       ],
     },
     {

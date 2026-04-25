@@ -1,6 +1,6 @@
 <div class="admin-shell">
   <aside class="sidebar">
-    <a class="brand" routerLink="/admin">
+    <a class="brand" routerLink="/admin/inicio">
       <span class="brand-mark">A</span>
       <div>
         <strong>AutoAssist AI</strong>
@@ -36,7 +36,7 @@
             [attr.aria-expanded]="activeGroup() === group.title"
           >
             <span>{{ group.title }}</span>
-            <span class="group-arrow">{{ activeGroup() === group.title ? '−' : '+' }}</span>
+            <span class="group-arrow">{{ activeGroup() === group.title ? '-' : '+' }}</span>
           </button>
 
           @if (activeGroup() === group.title) {
@@ -46,7 +46,7 @@
                   class="nav-item"
                   [routerLink]="item.route"
                   routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+                  [routerLinkActiveOptions]="{ exact: true }"
                 >
                   {{ item.label }}
                 </a>

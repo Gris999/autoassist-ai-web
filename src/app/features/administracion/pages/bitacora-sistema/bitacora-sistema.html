@@ -1,0 +1,214 @@
+<div class="bitacora-page">
+  <header class="hero-card bitacora-hero">
+    <div class="hero-copy">
+      <p class="hero-kicker">Autenticacion y seguridad</p>
+      <h2>Consulta la bitacora del sistema para auditoria y seguimiento</h2>
+      <p>
+        Revisa actividad administrativa, cambios de roles y eventos del sistema
+        con filtros por fecha, usuario, modulo y accion.
+      </p>
+    </div>
+
+    <article class="hero-note">
+      <span class="hero-note__label">Modo lectura</span>
+      <strong>Auditoria operativa del sistema</strong>
+      <p>
+        La bitacora es de solo consulta. Puedes filtrar eventos y revisar el
+        detalle sin modificar registros existentes.
+      </p>
+    </article>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="feedback-box error">{{ errorMessage() }}</div>
+  }
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-pill">Total eventos</span>
+      <strong>{{ totalEventos() }}</strong>
+      <p>Registros obtenidos con la consulta actual.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Autenticacion</span>
+      <strong>{{ eventosAutenticacion() }}</strong>
+      <p>Eventos ligados a acceso y seguridad.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Cambios de roles</span>
+      <strong>{{ cambiosRoles() }}</strong>
+      <p>Acciones relacionadas a actualizacion de permisos.</p>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-pill">Eventos del dia</span>
+      <strong>{{ eventosHoy() }}</strong>
+      <p>Actividad registrada en la fecha actual.</p>
+    </article>
+  </section>
+
+  <div class="bitacora-layout">
+    <section class="content-card">
+      <div class="section-heading">
+        <div>
+          <span class="section-pill">Filtros de consulta</span>
+          <h3>Gestionar bitacora del sistema</h3>
+          <p>Aplica filtros opcionales y revisa el resultado en la tabla.</p>
+        </div>
+      </div>
+
+      <form class="filters-grid" [formGroup]="filterForm">
+        <label class="field">
+          <span>Fecha inicio</span>
+          <input type="datetime-local" formControlName="fecha_inicio" />
+        </label>
+
+        <label class="field">
+          <span>Fecha fin</span>
+          <input type="datetime-local" formControlName="fecha_fin" />
+        </label>
+
+        <label class="field">
+          <span>ID usuario</span>
+          <input type="number" min="1" formControlName="id_usuario" placeholder="Ej. 1" />
+        </label>
+
+        <label class="field">
+          <span>Modulo</span>
+          <input type="text" formControlName="modulo" placeholder="Ej. AUTENTICACION_SEGURIDAD" />
+        </label>
+
+        <label class="field">
+          <span>Accion</span>
+          <input
+            type="text"
+            formControlName="accion"
+            placeholder="Ej. ACTUALIZAR_ROLES_USUARIO"
+          />
+        </label>
+
+        <div class="filter-actions">
+          <button type="button" class="primary-button" (click)="searchBitacora()">
+            Buscar
+          </button>
+          <button type="button" class="secondary-button" (click)="clearFilters()">
+            Limpiar filtros
+          </button>
+        </div>
+      </form>
+
+      @if (loading()) {
+        <div class="empty-card">
+          <strong>Cargando bitacora...</strong>
+          <p>Estamos consultando los eventos del sistema.</p>
+        </div>
+      } @else if (entries().length === 0) {
+        <div class="empty-card">
+          <strong>Sin registros</strong>
+          <p>No existen eventos que coincidan con los filtros aplicados.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Accion</th>
+                <th>Modulo</th>
+                <th>IP origen</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (entry of entries(); track trackEntry($index, entry)) {
+                <tr [class.is-selected]="selectedEntry()?.id_bitacora === entry.id_bitacora">
+                  <td>{{ formatDateTime(entry.fecha_hora) }}</td>
+                  <td>{{ getUserName(entry) }}</td>
+                  <td>{{ entry.usuario?.email || 'Sin usuario asociado' }}</td>
+                  <td><span class="log-chip">{{ entry.accion }}</span></td>
+                  <td><span class="module-chip">{{ entry.modulo }}</span></td>
+                  <td>{{ entry.ip_origen || 'No disponible' }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="table-action"
+                      (click)="openDetail(entry.id_bitacora)"
+                    >
+                      Ver detalle
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section class="content-card detail-card">
+      <div class="section-heading">
+        <div>
+          <span class="section-pill">Detalle</span>
+          <h3>Evento seleccionado</h3>
+          <p>Revisa informacion completa del registro auditado.</p>
+        </div>
+      </div>
+
+      @if (detailErrorMessage()) {
+        <div class="feedback-box error">{{ detailErrorMessage() }}</div>
+      }
+
+      @if (loadingDetail()) {
+        <div class="empty-card">
+          <strong>Cargando detalle...</strong>
+          <p>Estamos recuperando el registro solicitado.</p>
+        </div>
+      } @else if (selectedEntry(); as detail) {
+        <div class="detail-grid">
+          <div class="detail-item">
+            <small>ID bitacora</small>
+            <strong>#{{ detail.id_bitacora }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Usuario</small>
+            <strong>{{ getUserName(detail) }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Email</small>
+            <strong>{{ detail.usuario?.email || 'Sin email asociado' }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Accion</small>
+            <strong>{{ detail.accion }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Modulo</small>
+            <strong>{{ detail.modulo }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>Fecha y hora</small>
+            <strong>{{ formatDateTime(detail.fecha_hora) }}</strong>
+          </div>
+          <div class="detail-item">
+            <small>IP origen</small>
+            <strong>{{ detail.ip_origen || 'No disponible' }}</strong>
+          </div>
+          <div class="detail-item detail-item--full">
+            <small>Descripcion</small>
+            <strong>{{ detail.descripcion || 'Sin descripcion registrada.' }}</strong>
+          </div>
+        </div>
+      } @else {
+        <div class="empty-card">
+          <strong>Selecciona un evento</strong>
+          <p>Usa la tabla para abrir el detalle de un registro de bitacora.</p>
+        </div>
+      }
+    </section>
+  </div>
+</div>
