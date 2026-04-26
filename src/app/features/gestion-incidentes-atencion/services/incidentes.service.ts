@@ -17,6 +17,16 @@ import {
   UnidadMovilDisponible,
 } from '../models/incidente-atencion.model';
 
+export interface AnalisisIncidenteResponse {
+  id_incidente: number;
+  clasificacion_ia: string;
+  confianza_clasificacion: number;
+  prioridad: string;
+  resumen_ia: string;
+  requiere_mas_info: boolean;
+  preguntas_sugeridas: string[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -30,6 +40,7 @@ export class IncidentesService {
     );
   }
 
+<<<<<<< HEAD
   getDetalleSolicitudAtencion(
     idSolicitudTaller: number
   ): Observable<SolicitudAtencionDetalle> {
@@ -89,6 +100,12 @@ export class IncidentesService {
     return this.http.patch<ActualizarEstadoIncidenteResponse>(
       `${this.apiUrl}/incidentes/taller/incidentes/${idIncidente}/estado`,
       body
+=======
+  analizarIncidente(idIncidente: number): Observable<AnalisisIncidenteResponse> {
+    return this.http.post<AnalisisIncidenteResponse>(
+      `${this.apiUrl}/inteligencia/incidentes/${idIncidente}/analizar`,
+      {}
+>>>>>>> main
     );
   }
 }

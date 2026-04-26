@@ -54,6 +54,41 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'tecnico',
+    component: TallerLayout,
+    canActivate: [authGuard],
+    data: {
+      allowedRoles: ['tecnico', 'técnico'],
+    },
+    children: [
+      {
+        path: '',
+        component: InicioTaller,
+      },
+      {
+        path: 'asignaciones',
+        component: SolicitudesDisponibles,
+      },
+      {
+        path: 'seguimiento',
+        component: SolicitudesDisponibles,
+      },
+      {
+        path: 'incidentes/:id',
+        component: DetalleSolicitud,
+      },
+      {
+        path: 'solicitudes',
+        redirectTo: 'asignaciones',
+        pathMatch: 'full',
+      },
+      {
+        path: 'solicitudes/:id',
+        component: DetalleSolicitud,
+      },
+    ],
+  },
+  {
     path: 'admin',
     component: AdminLayout,
     canActivate: [authGuard],

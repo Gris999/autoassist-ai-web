@@ -75,6 +75,11 @@
     border-color 0.18s ease;
 }
 
+button.hero-link {
+  border: 0;
+  cursor: pointer;
+}
+
 .hero-link:hover,
 .hero-link:focus-visible,
 .quick-link:hover,
@@ -96,6 +101,11 @@
   background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.hero-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 
 .status-card,
@@ -133,6 +143,26 @@
 .status-card span {
   display: block;
   color: rgba(241, 248, 255, 0.88);
+}
+
+.technician-state {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.technician-state span {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.technician-state small {
+  color: rgba(241, 248, 255, 0.78);
+  line-height: 1.45;
 }
 
 .availability-toggle {
