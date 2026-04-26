@@ -11,6 +11,7 @@ import { DetalleSolicitud } from './features/gestion-incidentes-atencion/pages/d
 import { SolicitudesDisponibles } from './features/gestion-incidentes-atencion/pages/solicitudes-disponibles/solicitudes-disponibles';
 import { DisponibilidadTaller } from './features/gestion-operativa-taller-tecnico/pages/disponibilidad-taller/disponibilidad-taller';
 import { GestionarTecnicos } from './features/gestion-operativa-taller-tecnico/pages/gestionar-tecnicos/gestionar-tecnicos';
+import { GestionarUnidades } from './features/gestion-operativa-taller-tecnico/pages/gestionar-unidades/gestionar-unidades';
 import { InicioTaller } from './features/gestion-operativa-taller-tecnico/pages/inicio-taller/inicio-taller';
 import { Home } from './features/publico/pages/home/home';
 import { TallerLayout } from './core/layouts/taller-layout/taller-layout';
@@ -47,6 +48,10 @@ export const routes: Routes = [
       {
         path: 'tecnicos',
         component: GestionarTecnicos,
+      },
+      {
+        path: 'unidades',
+        component: GestionarUnidades,
       },
       {
         path: 'solicitudes',

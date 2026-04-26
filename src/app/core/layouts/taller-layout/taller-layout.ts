@@ -112,9 +112,13 @@ export class TallerLayout {
           { label: 'Servicios ofrecidos', disabled: true, note: 'Proximamente' },
           { label: 'Tipos de vehiculo', disabled: true, note: 'Proximamente' },
           { label: 'Tecnicos', route: '/taller/tecnicos' },
-          { label: 'Disponibilidad del tecnico', disabled: true, note: 'Proximamente' },
+          {
+            label: 'Disponibilidad del tecnico',
+            route: '/taller/tecnicos',
+            note: 'En la misma pantalla',
+          },
           { label: 'Especialidades', route: '/taller/tecnicos', note: 'En la misma pantalla' },
-          { label: 'Unidades moviles', disabled: true, note: 'Proximamente' },
+          { label: 'Unidades moviles', route: '/taller/unidades' },
         ],
       },
       {

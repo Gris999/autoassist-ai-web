@@ -51,6 +51,7 @@ export class GestionarTecnicos implements OnInit {
   readonly selectionLoading = signal(false);
   readonly savingTechnician = signal(false);
   readonly statusSavingId = signal<number | null>(null);
+  readonly availabilitySavingId = signal<number | null>(null);
   readonly specialtiesLoading = signal(false);
   readonly specialtiesSaving = signal(false);
   readonly errorMessage = signal('');
@@ -68,7 +69,7 @@ export class GestionarTecnicos implements OnInit {
     {
       title: 'Estado y disponibilidad',
       description:
-        'Un tecnico deshabilitado no puede quedar disponible. El cambio de estado se realiza solo con habilitar o deshabilitar.',
+        'Un tecnico deshabilitado no puede quedar disponible. La disponibilidad se ajusta desde esta vista y el estado se cambia solo con habilitar o deshabilitar.',
     },
     {
       title: 'Registro y edicion',
@@ -505,6 +506,63 @@ export class GestionarTecnicos implements OnInit {
       });
   }
 
+  changeTechnicianAvailability(
+    technician: TecnicoResumen,
+    nextAvailability: boolean
+  ): void {
+    if (!technician.estado && nextAvailability) {
+      this.errorMessage.set(
+        'No puedes marcar disponible a un tecnico deshabilitado.'
+      );
+      this.successMessage.set('');
+      return;
+    }
+
+    if (technician.disponible === nextAvailability) {
+      this.errorMessage.set('');
+      this.successMessage.set(
+        nextAvailability
+          ? 'El tecnico ya estaba disponible.'
+          : 'El tecnico ya estaba marcado como no disponible.'
+      );
+      return;
+    }
+
+    this.availabilitySavingId.set(technician.id_tecnico);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.workshopOperationalService
+      .actualizarTecnico(technician.id_tecnico, {
+        disponible: nextAvailability,
+      })
+      .pipe(finalize(() => this.availabilitySavingId.set(null)))
+      .subscribe({
+        next: (updatedTechnician) => {
+          this.upsertTechnician(updatedTechnician);
+
+          if (this.selectedTechnicianId() === updatedTechnician.id_tecnico) {
+            this.selectedTechnicianDetail.set(updatedTechnician);
+            if (this.isEditMode()) {
+              this.patchTechnicianForm(updatedTechnician);
+            }
+          }
+
+          this.successMessage.set(
+            nextAvailability
+              ? 'Tecnico marcado como disponible correctamente.'
+              : 'Tecnico marcado como no disponible correctamente.'
+          );
+        },
+        error: (error) => {
+          this.handleHttpError(
+            error,
+            'No se pudo actualizar la disponibilidad del tecnico.'
+          );
+        },
+      });
+  }
+
   saveSpecialties(): void {
     const selectedTechnician = this.selectedTechnician();
     if (!selectedTechnician) {
@@ -663,10 +721,22 @@ export class GestionarTecnicos implements OnInit {
       .toUpperCase();
   }
 
-  getAvailabilityBadgeClass(disponible: boolean): string {
+  getAvailabilityBadgeClass(disponible: boolean, estado = true): string {
+    if (!estado) {
+      return 'status-pill status-pill--disabled';
+    }
+
     return disponible
       ? 'status-pill status-pill--available'
       : 'status-pill status-pill--unavailable';
+  }
+
+  getAvailabilityLabel(disponible: boolean, estado = true): string {
+    if (!estado) {
+      return 'Deshabilitado';
+    }
+
+    return disponible ? 'Disponible' : 'No disponible';
   }
 
   getStateBadgeClass(estado: boolean): string {

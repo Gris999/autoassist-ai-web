@@ -170,8 +170,8 @@
                 </div>
 
                 <div class="table-cell">
-                  <span [class]="getAvailabilityBadgeClass(technician.disponible)">
-                    {{ technician.disponible ? 'Disponible' : 'No disponible' }}
+                  <span [class]="getAvailabilityBadgeClass(technician.disponible, technician.estado)">
+                    {{ getAvailabilityLabel(technician.disponible, technician.estado) }}
                   </span>
                 </div>
 
@@ -198,6 +198,38 @@
                     (click)="selectTechnician(technician.id_tecnico, 'view')"
                   >
                     Ver
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    [disabled]="
+                      availabilitySavingId() === technician.id_tecnico ||
+                      !technician.estado ||
+                      technician.disponible
+                    "
+                    (click)="changeTechnicianAvailability(technician, true)"
+                  >
+                    @if (availabilitySavingId() === technician.id_tecnico && !technician.disponible) {
+                      Guardando...
+                    } @else {
+                      Marcar disponible
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    [disabled]="
+                      availabilitySavingId() === technician.id_tecnico ||
+                      !technician.estado ||
+                      !technician.disponible
+                    "
+                    (click)="changeTechnicianAvailability(technician, false)"
+                  >
+                    @if (availabilitySavingId() === technician.id_tecnico && technician.disponible) {
+                      Guardando...
+                    } @else {
+                      Marcar no disponible
+                    }
                   </button>
                   <button
                     type="button"
@@ -273,7 +305,7 @@
                   </div>
                 </div>
 
-                <div class="detail-grid">
+                  <div class="detail-grid">
                   <div class="detail-item">
                     <span>Celular</span>
                     <strong>{{ detail.celular }}</strong>
@@ -282,10 +314,10 @@
                     <span>Telefono</span>
                     <strong>{{ detail.telefono_contacto }}</strong>
                   </div>
-                  <div class="detail-item">
-                    <span>Disponibilidad</span>
-                    <strong>{{ detail.disponible ? 'Disponible' : 'No disponible' }}</strong>
-                  </div>
+                    <div class="detail-item">
+                      <span>Disponibilidad</span>
+                      <strong>{{ getAvailabilityLabel(detail.disponible, detail.estado) }}</strong>
+                    </div>
                   <div class="detail-item">
                     <span>Estado</span>
                     <strong>{{ detail.estado ? 'Activo' : 'Deshabilitado' }}</strong>
@@ -297,6 +329,49 @@
                   <div class="detail-item">
                     <span>Longitud actual</span>
                     <strong>{{ detail.longitud_actual ?? 'No disponible' }}</strong>
+                  </div>
+                </div>
+
+                <div class="helper-card accent">
+                  <strong>Disponibilidad del tecnico</strong>
+                  <span>
+                    El taller puede ajustar disponibilidad operativa desde esta misma vista usando
+                    el endpoint de edicion del tecnico. Si el tecnico esta deshabilitado, la accion
+                    queda bloqueada.
+                  </span>
+                  <div class="detail-actions inline-actions">
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      [disabled]="
+                        availabilitySavingId() === detail.id_tecnico ||
+                        !detail.estado ||
+                        detail.disponible
+                      "
+                      (click)="changeTechnicianAvailability(detail, true)"
+                    >
+                      {{
+                        availabilitySavingId() === detail.id_tecnico && !detail.disponible
+                          ? 'Guardando...'
+                          : 'Marcar disponible'
+                      }}
+                    </button>
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      [disabled]="
+                        availabilitySavingId() === detail.id_tecnico ||
+                        !detail.estado ||
+                        !detail.disponible
+                      "
+                      (click)="changeTechnicianAvailability(detail, false)"
+                    >
+                      {{
+                        availabilitySavingId() === detail.id_tecnico && detail.disponible
+                          ? 'Guardando...'
+                          : 'Marcar no disponible'
+                      }}
+                    </button>
                   </div>
                 </div>
 

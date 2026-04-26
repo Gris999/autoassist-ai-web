@@ -43,6 +43,19 @@ export interface CambiarEstadoTecnicoResponse {
   disponible: boolean;
 }
 
+export interface DisponibilidadTecnicoResponse {
+  id_tecnico: number;
+  id_usuario: number;
+  disponible: boolean;
+  estado: boolean;
+  latitud_actual?: number | null;
+  longitud_actual?: number | null;
+}
+
+export interface ActualizarDisponibilidadTecnicoRequest {
+  disponible: boolean;
+}
+
 export interface Especialidad {
   id_especialidad: number;
   nombre: string;

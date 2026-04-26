@@ -4,15 +4,23 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment.development';
 import {
+  ActualizarDisponibilidadTecnicoRequest,
   ActualizarTecnicoRequest,
   CambiarEstadoTecnicoResponse,
   CrearTecnicoRequest,
+  DisponibilidadTecnicoResponse,
   Especialidad,
   EspecialidadesRequest,
   EspecialidadesTecnicoResponse,
   TecnicoDetalle,
   TecnicoResumen,
 } from '../models/technician-management.model';
+import {
+  ActualizarDisponibilidadUnidadMovilRequest,
+  ActualizarUnidadMovilRequest,
+  CrearUnidadMovilRequest,
+  UnidadMovil,
+} from '../models/mobile-unit-management.model';
 import {
   UpdateWorkshopAvailabilityRequest,
   WorkshopAvailability,
@@ -36,6 +44,21 @@ export class WorkshopOperationalService {
   ): Observable<WorkshopAvailability> {
     return this.http.put<WorkshopAvailability>(
       `${this.apiUrl}/operativo/taller/disponibilidad`,
+      payload
+    );
+  }
+
+  getTechnicianAvailability(): Observable<DisponibilidadTecnicoResponse> {
+    return this.http.get<DisponibilidadTecnicoResponse>(
+      `${this.apiUrl}/operativo/taller/tecnico/disponibilidad`
+    );
+  }
+
+  updateTechnicianAvailability(
+    payload: ActualizarDisponibilidadTecnicoRequest
+  ): Observable<DisponibilidadTecnicoResponse> {
+    return this.http.put<DisponibilidadTecnicoResponse>(
+      `${this.apiUrl}/operativo/taller/tecnico/disponibilidad`,
       payload
     );
   }
@@ -131,6 +154,45 @@ export class WorkshopOperationalService {
   ): Observable<EspecialidadesTecnicoResponse> {
     return this.http.delete<EspecialidadesTecnicoResponse>(
       `${this.apiUrl}/operativo/taller/tecnicos/${idTecnico}/especialidades/${idEspecialidad}`
+    );
+  }
+
+  getUnidadesMoviles(): Observable<UnidadMovil[]> {
+    return this.http.get<UnidadMovil[]>(
+      `${this.apiUrl}/operativo/taller/unidades-moviles`
+    );
+  }
+
+  getUnidadMovilDetalle(idUnidadMovil: number): Observable<UnidadMovil> {
+    return this.http.get<UnidadMovil>(
+      `${this.apiUrl}/operativo/taller/unidades-moviles/${idUnidadMovil}`
+    );
+  }
+
+  registrarUnidadMovil(payload: CrearUnidadMovilRequest): Observable<UnidadMovil> {
+    return this.http.post<UnidadMovil>(
+      `${this.apiUrl}/operativo/taller/unidades-moviles`,
+      payload
+    );
+  }
+
+  actualizarUnidadMovil(
+    idUnidadMovil: number,
+    payload: ActualizarUnidadMovilRequest
+  ): Observable<UnidadMovil> {
+    return this.http.put<UnidadMovil>(
+      `${this.apiUrl}/operativo/taller/unidades-moviles/${idUnidadMovil}`,
+      payload
+    );
+  }
+
+  actualizarDisponibilidadUnidadMovil(
+    idUnidadMovil: number,
+    payload: ActualizarDisponibilidadUnidadMovilRequest
+  ): Observable<UnidadMovil> {
+    return this.http.patch<UnidadMovil>(
+      `${this.apiUrl}/operativo/taller/unidades-moviles/${idUnidadMovil}/disponibilidad`,
+      payload
     );
   }
 }

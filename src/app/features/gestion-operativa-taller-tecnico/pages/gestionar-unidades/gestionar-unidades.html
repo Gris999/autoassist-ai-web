@@ -1,0 +1,447 @@
+<div class="units-page">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <span class="card-kicker">Gestion Operativa de Taller y Tecnico</span>
+      <h2>Gestionar unidades moviles</h2>
+      <p>
+        Administra las unidades disponibles para atender incidentes: registro,
+        edicion, disponibilidad y estado operativo desde una sola vista.
+      </p>
+
+      <div class="hero-actions">
+        <button type="button" class="primary-button" (click)="startCreateMode()">
+          Registrar unidad
+        </button>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading() || refreshing()"
+          (click)="loadUnits()"
+        >
+          {{ refreshing() ? 'Actualizando...' : 'Actualizar lista' }}
+        </button>
+      </div>
+    </div>
+
+    <article class="hero-side-card">
+      <strong>Resumen operativo</strong>
+      <div class="hero-side-grid">
+        <div>
+          <small>Total</small>
+          <span>{{ totalUnits() }}</span>
+        </div>
+        <div>
+          <small>Disponibles</small>
+          <span>{{ totalAvailable() }}</span>
+        </div>
+        <div>
+          <small>No disponibles</small>
+          <span>{{ totalUnavailable() }}</span>
+        </div>
+        <div>
+          <small>Deshabilitadas</small>
+          <span>{{ totalDisabled() }}</span>
+        </div>
+      </div>
+    </article>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="feedback-box error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="feedback-box success">{{ successMessage() }}</div>
+  }
+
+  @if (loading()) {
+    <section class="empty-card">
+      <strong>Cargando unidades moviles...</strong>
+      <p>Estamos consultando el parque operativo registrado por el taller.</p>
+    </section>
+  } @else {
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span>Total</span>
+        <strong>{{ totalUnits() }}</strong>
+        <small>Unidades registradas</small>
+      </article>
+      <article class="metric-card">
+        <span>Disponibles</span>
+        <strong>{{ totalAvailable() }}</strong>
+        <small>Listas para salida</small>
+      </article>
+      <article class="metric-card">
+        <span>No disponibles</span>
+        <strong>{{ totalUnavailable() }}</strong>
+        <small>Temporalmente fuera de asignacion</small>
+      </article>
+      <article class="metric-card">
+        <span>Deshabilitadas</span>
+        <strong>{{ totalDisabled() }}</strong>
+        <small>Fuera de servicio</small>
+      </article>
+    </section>
+
+    <section class="management-grid">
+      <article class="management-card">
+        <div class="section-heading">
+          <div>
+            <h3>Listado de unidades</h3>
+            <p>Filtra por placa, tipo, disponibilidad o estado operativo.</p>
+          </div>
+        </div>
+
+        <form class="filters-grid" [formGroup]="filtersForm">
+          <label class="field field--search">
+            <span>Buscar por placa</span>
+            <input type="text" formControlName="search" placeholder="Ej. 1234ABC" />
+          </label>
+
+          <label class="field">
+            <span>Tipo de unidad</span>
+            <select formControlName="tipo_unidad">
+              <option value="todas">Todas</option>
+              @for (unitType of unitTypes(); track trackType($index, unitType)) {
+                <option [value]="unitType">{{ unitType }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Disponibilidad</span>
+            <select formControlName="disponibilidad">
+              <option value="todos">Todos</option>
+              <option value="disponibles">Disponibles</option>
+              <option value="no_disponibles">No disponibles</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <select formControlName="estado">
+              <option value="todos">Todos</option>
+              <option value="activos">Activas</option>
+              <option value="deshabilitados">Deshabilitadas</option>
+            </select>
+          </label>
+        </form>
+
+        @if (filteredUnits().length === 0) {
+          <div class="empty-card compact">
+            <strong>Sin unidades visibles</strong>
+            <p>No hay resultados para los filtros actuales o aun no se registraron unidades.</p>
+          </div>
+        } @else {
+          <div class="table-shell">
+            <div class="table-head">
+              <span>Unidad</span>
+              <span>Tipo</span>
+              <span>Disponibilidad</span>
+              <span>Estado</span>
+              <span>Coordenadas</span>
+              <span>Acciones</span>
+            </div>
+
+            @for (unit of filteredUnits(); track trackUnit($index, unit)) {
+              <div class="table-row" [class.is-selected]="selectedUnitId() === unit.id_unidad_movil">
+                <div class="table-cell unit-cell">
+                  <span class="avatar-badge">{{ unit.placa.slice(0, 2) }}</span>
+                  <div>
+                    <strong>{{ unit.placa }}</strong>
+                    <small>#{{ unit.id_unidad_movil }}</small>
+                  </div>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getTypeBadgeClass(unit.tipo_unidad)">
+                    {{ unit.tipo_unidad }}
+                  </span>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getAvailabilityBadgeClass(unit.disponible, unit.estado)">
+                    {{ getAvailabilityLabel(unit.disponible, unit.estado) }}
+                  </span>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getStateBadgeClass(unit.estado)">
+                    {{ unit.estado ? 'Activa' : 'Deshabilitada' }}
+                  </span>
+                </div>
+
+                <div class="table-cell">
+                  <strong>{{ unit.latitud_actual ?? 'N/D' }}</strong>
+                  <small>{{ unit.longitud_actual ?? 'N/D' }}</small>
+                </div>
+
+                <div class="table-cell actions-cell">
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="selectUnit(unit.id_unidad_movil, 'view')"
+                  >
+                    Ver
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="editUnit(unit.id_unidad_movil)"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    [disabled]="rowSavingId() === unit.id_unidad_movil || !unit.estado || unit.disponible"
+                    (click)="changeUnitAvailability(unit, true)"
+                  >
+                    Marcar disponible
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    [disabled]="rowSavingId() === unit.id_unidad_movil || !unit.estado || !unit.disponible"
+                    (click)="changeUnitAvailability(unit, false)"
+                  >
+                    Marcar no disponible
+                  </button>
+                  <button
+                    type="button"
+                    class="danger-button action-button"
+                    [disabled]="rowSavingId() === unit.id_unidad_movil"
+                    (click)="changeUnitState(unit, !unit.estado)"
+                  >
+                    @if (rowSavingId() === unit.id_unidad_movil) {
+                      Procesando...
+                    } @else {
+                      {{ unit.estado ? 'Deshabilitar' : 'Habilitar' }}
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </article>
+
+      <div class="side-stack">
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>
+                @if (isCreateMode()) {
+                  Registrar unidad movil
+                } @else if (isEditMode()) {
+                  Editar unidad movil
+                } @else {
+                  Detalle de la unidad
+                }
+              </h3>
+              <p>
+                @if (isCreateMode()) {
+                  Crea una nueva unidad y define su estado operativo inicial.
+                } @else if (isEditMode()) {
+                  Ajusta placa, tipo, disponibilidad y coordenadas actuales.
+                } @else {
+                  Revisa el estado actual y aplica acciones rapidas cuando sea necesario.
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (selectionLoading()) {
+            <div class="empty-card compact">
+              <strong>Cargando detalle...</strong>
+              <p>Estamos consultando la informacion completa de la unidad seleccionada.</p>
+            </div>
+          } @else if (isViewMode()) {
+            @if (selectedUnitDetail(); as detail) {
+              <div class="detail-card">
+                <div class="detail-head">
+                  <span class="avatar-badge large">{{ detail.placa.slice(0, 2) }}</span>
+                  <div>
+                    <strong>{{ detail.placa }}</strong>
+                    <small>{{ detail.tipo_unidad }}</small>
+                  </div>
+                </div>
+
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span>Disponibilidad</span>
+                    <strong>{{ getAvailabilityLabel(detail.disponible, detail.estado) }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Estado</span>
+                    <strong>{{ detail.estado ? 'Activa' : 'Deshabilitada' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Latitud actual</span>
+                    <strong>{{ detail.latitud_actual ?? 'No disponible' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Longitud actual</span>
+                    <strong>{{ detail.longitud_actual ?? 'No disponible' }}</strong>
+                  </div>
+                </div>
+
+                <div class="helper-card accent">
+                  <strong>Disponibilidad y estado</strong>
+                  <span>
+                    El mismo endpoint PATCH permite cambiar disponible, estado o ambos. Si la
+                    unidad esta deshabilitada, no se puede marcar disponible.
+                  </span>
+                  <div class="detail-actions inline-actions">
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      [disabled]="rowSavingId() === detail.id_unidad_movil || !detail.estado || detail.disponible"
+                      (click)="changeUnitAvailability(detail, true)"
+                    >
+                      Marcar disponible
+                    </button>
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      [disabled]="rowSavingId() === detail.id_unidad_movil || !detail.estado || !detail.disponible"
+                      (click)="changeUnitAvailability(detail, false)"
+                    >
+                      Marcar no disponible
+                    </button>
+                    <button
+                      type="button"
+                      class="danger-button"
+                      [disabled]="rowSavingId() === detail.id_unidad_movil"
+                      (click)="changeUnitState(detail, !detail.estado)"
+                    >
+                      {{ detail.estado ? 'Deshabilitar unidad' : 'Habilitar unidad' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="detail-actions">
+                  <button
+                    type="button"
+                    class="primary-button"
+                    (click)="editUnit(detail.id_unidad_movil)"
+                  >
+                    Editar unidad
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="startCreateMode()"
+                  >
+                    Nuevo registro
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-card compact">
+                <strong>Selecciona una unidad</strong>
+                <p>El detalle aparecera aqui cuando elijas una unidad del listado.</p>
+              </div>
+            }
+          } @else {
+            <form class="form-grid" [formGroup]="unitForm">
+              <div class="field-grid">
+                <label class="field">
+                  <span>Placa</span>
+                  <input type="text" formControlName="placa" />
+                </label>
+
+                <label class="field">
+                  <span>Tipo de unidad</span>
+                  <input type="text" formControlName="tipo_unidad" placeholder="GRUA, CAMIONETA..." />
+                </label>
+              </div>
+
+              <div class="toggle-grid">
+                <label class="checkbox-field">
+                  <input type="checkbox" formControlName="disponible" />
+                  <span>Disponible para atencion</span>
+                </label>
+
+                <label class="checkbox-field">
+                  <input type="checkbox" formControlName="estado" />
+                  <span>Unidad habilitada</span>
+                </label>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Latitud actual</span>
+                  <input type="text" formControlName="latitud_actual" />
+                </label>
+
+                <label class="field">
+                  <span>Longitud actual</span>
+                  <input type="text" formControlName="longitud_actual" />
+                </label>
+              </div>
+
+              <div class="helper-card">
+                <strong>Validaciones clave</strong>
+                <span>
+                  No se puede guardar una unidad con disponible activo y estado deshabilitado. Si
+                  editas una unidad, el backend exige al menos un cambio.
+                </span>
+              </div>
+
+              <div class="detail-actions">
+                <button
+                  type="button"
+                  class="primary-button"
+                  [disabled]="savingUnit() || (isEditMode() && !hasUnitChanges())"
+                  (click)="saveUnit()"
+                >
+                  @if (savingUnit()) {
+                    Guardando...
+                  } @else if (isCreateMode()) {
+                    Registrar unidad
+                  } @else {
+                    Guardar cambios
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary-button"
+                  [disabled]="savingUnit()"
+                  (click)="cancelEditor()"
+                >
+                  {{ isCreateMode() ? 'Limpiar formulario' : 'Cancelar edicion' }}
+                </button>
+              </div>
+            </form>
+          }
+        </article>
+
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>Reglas operativas</h3>
+              <p>Visibles para evitar envios invalidos al backend de unidades moviles.</p>
+            </div>
+          </div>
+
+          <div class="rules-list">
+            <div class="rule-item">
+              <strong>Disponibilidad y estado</strong>
+              <span>Una unidad deshabilitada no puede quedar disponible hasta volver a habilitarse.</span>
+            </div>
+            <div class="rule-item">
+              <strong>Sin eliminacion fisica</strong>
+              <span>El backend no tiene DELETE. Las unidades se controlan con estado y disponibilidad.</span>
+            </div>
+            <div class="rule-item">
+              <strong>Placa unica</strong>
+              <span>No se puede repetir placa. El error del backend se muestra en esta pantalla.</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  }
+</div>

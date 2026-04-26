@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 import { IncidentesService } from '../../../gestion-incidentes-atencion/services/incidentes.service';
 import { TokenService } from '../../../../core/services/token.service';
+import { DisponibilidadTecnicoResponse } from '../../models/technician-management.model';
 import { WorkshopAvailability } from '../../models/workshop-availability.model';
 import { WorkshopOperationalService } from '../../services/workshop-operational.service';
 
@@ -38,6 +39,7 @@ export class InicioTaller implements OnInit {
   readonly availabilitySaving = signal(false);
   readonly availabilityError = signal('');
   readonly workshopAvailability = signal<WorkshopAvailability | null>(null);
+  readonly technicianAvailability = signal<DisponibilidadTecnicoResponse | null>(null);
   readonly metricsOpen = signal(true);
   readonly quickAccessOpen = signal(true);
   readonly activityOpen = signal(true);
@@ -120,10 +122,10 @@ export class InicioTaller implements OnInit {
     if (this.isTechnicianHome()) {
       return [
         {
-          title: 'Mi disponibilidad',
-          description: 'Consulta o actualiza tu estado operativo cuando el flujo quede habilitado.',
+        title: 'Mi disponibilidad',
+          description: 'Consulta y actualiza tu disponibilidad real para nuevas asignaciones.',
           helper: 'Gestion Operativa',
-          status: 'upcoming',
+          status: 'available',
         },
         {
           title: 'Mis especialidades',
@@ -214,10 +216,23 @@ export class InicioTaller implements OnInit {
   });
 
   readonly availabilityMessage = computed(() => {
-    const availability = this.workshopAvailability();
     if (this.isTechnicianHome()) {
-      return 'Preparado para revisar asignaciones y actualizar el avance del servicio.';
+      const technicianAvailability = this.technicianAvailability();
+
+      if (!technicianAvailability) {
+        return 'Consultando disponibilidad actual del tecnico...';
+      }
+
+      if (!technicianAvailability.estado) {
+        return 'Tu perfil tecnico esta deshabilitado temporalmente.';
+      }
+
+      return technicianAvailability.disponible
+        ? 'Disponible para recibir nuevas asignaciones.'
+        : 'No disponible temporalmente para nuevas asignaciones.';
     }
+
+    const availability = this.workshopAvailability();
 
     if (!availability) {
       return 'Consultando disponibilidad actual...';
@@ -258,7 +273,7 @@ export class InicioTaller implements OnInit {
         },
       });
     } else {
-      this.availabilityLoading.set(false);
+      this.loadTechnicianAvailability();
       this.incidentes.set([
         {
           id_incidente: TECNICO_INCIDENTE_ASIGNADO_ID,
@@ -272,51 +287,100 @@ export class InicioTaller implements OnInit {
   }
 
   onAvailabilityChange(event: Event): void {
-    if (this.isTechnicianHome()) {
-      return;
-    }
-
     const target = event.target as HTMLInputElement;
     const nextValue = target.checked;
-    const currentAvailability = this.workshopAvailability();
+    const isTechnicianHome = this.isTechnicianHome();
+    const currentTechnicianAvailability = this.technicianAvailability();
+    const currentWorkshopAvailability = this.workshopAvailability();
+    const currentAvailability = isTechnicianHome
+      ? currentTechnicianAvailability
+      : currentWorkshopAvailability;
 
     if (!currentAvailability || this.availabilitySaving()) {
       target.checked = currentAvailability?.disponible ?? false;
       return;
     }
 
+    if (isTechnicianHome && !currentTechnicianAvailability?.estado && nextValue) {
+      target.checked = false;
+      this.availabilityError.set(
+        'Tu perfil tecnico esta deshabilitado y no puede marcarse como disponible.'
+      );
+      return;
+    }
+
     this.availabilitySaving.set(true);
     this.availabilityError.set('');
+
+    if (isTechnicianHome) {
+      this.workshopOperationalService
+        .updateTechnicianAvailability({ disponible: nextValue })
+        .subscribe({
+          next: (response: DisponibilidadTecnicoResponse) => {
+            this.technicianAvailability.set(response);
+            this.availabilitySaving.set(false);
+          },
+          error: (error: { status?: number; error?: { detail?: string } }) => {
+            this.availabilitySaving.set(false);
+            target.checked = currentTechnicianAvailability?.disponible ?? false;
+
+            if (error?.status === 401) {
+              this.tokenService.clearSession();
+              this.router.navigate(['/login']);
+              return;
+            }
+
+            if (error?.status === 403) {
+              this.availabilityError.set(
+                'No tienes permisos para cambiar tu disponibilidad tecnica.'
+              );
+              return;
+            }
+
+            this.availabilityError.set(
+              error?.error?.detail ??
+                'No se pudo guardar tu disponibilidad tecnica. Intenta nuevamente.'
+            );
+          },
+        });
+      return;
+    }
 
     this.workshopOperationalService
       .updateAvailability({ disponible: nextValue })
       .subscribe({
-      next: (response) => {
-        this.workshopAvailability.set(response);
-        this.availabilitySaving.set(false);
-      },
-      error: (error) => {
-        this.availabilitySaving.set(false);
-        target.checked = currentAvailability.disponible;
+        next: (response: WorkshopAvailability) => {
+          this.workshopAvailability.set(response);
+          this.availabilitySaving.set(false);
+        },
+        error: (error: { status?: number; error?: { detail?: string } }) => {
+          this.availabilitySaving.set(false);
+          target.checked = currentWorkshopAvailability?.disponible ?? false;
 
-        if (error?.status === 401) {
-          this.tokenService.clearSession();
-          this.router.navigate(['/login']);
-          return;
-        }
+          if (error?.status === 401) {
+            this.tokenService.clearSession();
+            this.router.navigate(['/login']);
+            return;
+          }
 
-        if (error?.status === 403) {
+          if (error?.status === 403) {
+            this.availabilityError.set(
+              'No tienes permisos para cambiar la disponibilidad del taller.'
+            );
+            return;
+          }
+
           this.availabilityError.set(
-            'No tienes permisos para cambiar la disponibilidad del taller.'
+            error?.error?.detail ??
+              'No se pudo guardar la disponibilidad. Intenta nuevamente.'
           );
-          return;
-        }
-
-        this.availabilityError.set(
-          'No se pudo guardar la disponibilidad. Intenta nuevamente.'
-        );
-      },
+        },
       });
+  }
+
+  scrollToAvailability(): void {
+    const availabilityCard = document.getElementById('availability-card');
+    availabilityCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   private loadAvailability(): void {
@@ -346,6 +410,39 @@ export class InicioTaller implements OnInit {
 
         this.availabilityError.set(
           'No pudimos cargar la disponibilidad actual del taller.'
+        );
+      },
+    });
+  }
+
+  private loadTechnicianAvailability(): void {
+    this.availabilityLoading.set(true);
+    this.availabilityError.set('');
+
+    this.workshopOperationalService.getTechnicianAvailability().subscribe({
+      next: (response) => {
+        this.technicianAvailability.set(response);
+        this.availabilityLoading.set(false);
+      },
+      error: (error) => {
+        this.availabilityLoading.set(false);
+
+        if (error?.status === 401) {
+          this.tokenService.clearSession();
+          this.router.navigate(['/login']);
+          return;
+        }
+
+        if (error?.status === 403) {
+          this.availabilityError.set(
+            'No tienes permisos para consultar tu disponibilidad tecnica.'
+          );
+          return;
+        }
+
+        this.availabilityError.set(
+          error?.error?.detail ??
+            'No pudimos cargar la disponibilidad actual del tecnico.'
         );
       },
     });

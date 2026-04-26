@@ -2,13 +2,10 @@
   display: block;
 }
 
-.technicians-page,
+.units-page,
 .side-stack,
-.specialties-panel,
 .form-grid,
 .rules-list,
-.current-specialties,
-.catalog-grid,
 .detail-card {
   display: grid;
   gap: 18px;
@@ -19,8 +16,6 @@
 .metric-card,
 .empty-card,
 .helper-card,
-.specialty-row,
-.catalog-option,
 .rule-item,
 .table-row {
   border-radius: 24px;
@@ -58,7 +53,7 @@
 }
 
 .hero-copy h2 {
-  max-width: 12ch;
+  max-width: 11ch;
   color: #ffffff;
   font-size: clamp(2rem, 4vw, 3.15rem);
   line-height: 0.96;
@@ -74,7 +69,6 @@
 .detail-head small,
 .detail-item span,
 .helper-card span,
-.catalog-option span,
 .rule-item span,
 .empty-card p {
   margin: 0;
@@ -94,9 +88,7 @@
 .table-head,
 .table-row,
 .table-cell,
-.specialty-chip-grid,
 .detail-grid,
-.selected-technician,
 .hero-side-grid {
   display: grid;
   gap: 14px;
@@ -178,21 +170,11 @@
 }
 
 .field span,
-.current-specialties strong,
 .rule-item strong,
 .helper-card strong,
 .detail-item strong,
-.table-cell strong,
-.catalog-option strong {
+.table-cell strong {
   color: #132443;
-}
-
-.field label,
-.field input,
-.field select,
-.field textarea,
-.catalog-option {
-  font: inherit;
 }
 
 .field input,
@@ -204,6 +186,7 @@
   background: #ffffff;
   color: #132443;
   outline: 0;
+  font: inherit;
 }
 
 .field input:focus,
@@ -212,8 +195,7 @@
   box-shadow: 0 0 0 4px rgba(17, 164, 234, 0.12);
 }
 
-.checkbox-field,
-.status-note {
+.checkbox-field {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -224,11 +206,6 @@
   border: 1px solid #dde8f4;
   color: #304665;
   font-weight: 700;
-}
-
-.status-note {
-  justify-content: space-between;
-  flex-wrap: wrap;
 }
 
 .helper-card {
@@ -245,7 +222,7 @@
 }
 
 .table-head {
-  grid-template-columns: 1.2fr 0.9fr 0.7fr 0.7fr 1fr 1.2fr;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.7fr 0.8fr 1.35fr;
   padding: 0 8px;
   color: #6c7e95;
   font-size: 0.85rem;
@@ -254,7 +231,7 @@
 }
 
 .table-row {
-  grid-template-columns: 1.2fr 0.9fr 0.7fr 0.7fr 1fr 1.2fr;
+  grid-template-columns: 1fr 0.7fr 0.7fr 0.7fr 0.8fr 1.35fr;
   align-items: center;
   padding: 16px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
@@ -269,7 +246,7 @@
   align-items: center;
 }
 
-.technician-cell {
+.unit-cell {
   grid-template-columns: auto 1fr;
 }
 
@@ -304,26 +281,8 @@
   font-size: 0.9rem;
 }
 
-.specialties-preview,
-.specialty-chip-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.specialty-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: #eaf6ff;
-  color: #0f91e2;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.status-pill {
+.status-pill,
+.type-pill {
   display: inline-flex;
   align-items: center;
   min-height: 34px;
@@ -344,13 +303,25 @@
   color: #8f6500;
 }
 
-.status-pill--disabled {
+.status-pill--disabled,
+.type-pill--other {
   background: #f1f3f6;
   color: #5f7087;
 }
 
-.detail-card {
-  gap: 20px;
+.type-pill--grua {
+  background: #e8f2ff;
+  color: #2956b2;
+}
+
+.type-pill--camioneta {
+  background: #eaf8ff;
+  color: #178cc1;
+}
+
+.type-pill--motocicleta {
+  background: #f2ebff;
+  color: #6d43c6;
 }
 
 .detail-head {
@@ -370,41 +341,6 @@
   border-radius: 20px;
   background: #f8fbff;
   border: 1px solid #dde8f4;
-}
-
-.selected-technician {
-  grid-template-columns: auto 1fr;
-  align-items: center;
-}
-
-.catalog-grid {
-  grid-template-columns: 1fr;
-}
-
-.catalog-option {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  align-items: start;
-  padding: 16px;
-}
-
-.specialty-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: #f8fbff;
-}
-
-.chip-action {
-  border: 0;
-  background: transparent;
-  color: #d75b1a;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .rule-item {
@@ -467,8 +403,7 @@
 
 .primary-button[disabled],
 .secondary-button[disabled],
-.danger-button[disabled],
-.chip-action[disabled] {
+.danger-button[disabled] {
   cursor: not-allowed;
   opacity: 0.65;
   transform: none;

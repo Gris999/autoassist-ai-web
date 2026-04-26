@@ -10,7 +10,7 @@
           {{ homeCopy().primaryLabel }}
         </a>
         @if (isTechnicianHome()) {
-          <button class="hero-link secondary" type="button" disabled>
+          <button class="hero-link secondary" type="button" (click)="scrollToAvailability()">
             {{ homeCopy().secondaryLabel }}
           </button>
         } @else {
@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <article class="status-card">
+    <article id="availability-card" class="status-card">
       <div class="status-head">
         <h2>{{ isTechnicianHome() ? 'Estado del tecnico' : 'Estado del taller' }}</h2>
         @if (!isTechnicianHome()) {
@@ -32,7 +32,13 @@
       <p>{{ availabilityMessage() }}</p>
       <span>
         @if (isTechnicianHome()) {
-          Jornada operativa | Atencion en ruta
+          @if (technicianAvailability(); as availability) {
+            {{ availability.estado ? 'Perfil habilitado' : 'Perfil deshabilitado' }} |
+            {{ availability.latitud_actual ?? 'Sin latitud' }} /
+            {{ availability.longitud_actual ?? 'Sin longitud' }}
+          } @else {
+            Cargando...
+          }
         } @else if (workshopAvailability(); as availability) {
           {{ availability.nombre_taller }} | {{ availability.radio_cobertura_km }} km
         } @else {
@@ -41,9 +47,36 @@
       </span>
 
       @if (isTechnicianHome()) {
+        <label class="availability-toggle" [class.is-disabled]="availabilityLoading() || availabilitySaving()">
+          <input
+            type="checkbox"
+            [checked]="technicianAvailability()?.disponible ?? false"
+            [disabled]="availabilityLoading() || availabilitySaving() || !(technicianAvailability()?.estado ?? false)"
+            (change)="onAvailabilityChange($event)"
+          />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-label">
+            {{ technicianAvailability()?.disponible ? 'Disponible' : 'No disponible' }}
+          </span>
+        </label>
+
         <div class="technician-state">
-          <span>Disponible para asignaciones</span>
-          <small>La actualizacion manual se habilitara en el caso de uso correspondiente.</small>
+          <span>
+            {{
+              technicianAvailability()?.estado
+                ? 'Puedes actualizar tu disponibilidad manualmente.'
+                : 'Tu perfil esta deshabilitado.'
+            }}
+          </span>
+          <small>
+            {{
+              technicianAvailability()?.estado
+                ? 'Si tienes una asignacion activa, el backend puede rechazar volver a disponible.'
+                : 'Mientras el perfil siga deshabilitado, el control de disponibilidad queda bloqueado.'
+            }}
+          </small>
         </div>
       } @else {
         <label class="availability-toggle" [class.is-disabled]="availabilityLoading() || availabilitySaving()">
