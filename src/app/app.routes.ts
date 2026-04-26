@@ -10,6 +10,7 @@ import { InicioAdmin } from './features/administracion/pages/inicio-admin/inicio
 import { DetalleSolicitud } from './features/gestion-incidentes-atencion/pages/detalle-solicitud/detalle-solicitud';
 import { SolicitudesDisponibles } from './features/gestion-incidentes-atencion/pages/solicitudes-disponibles/solicitudes-disponibles';
 import { DisponibilidadTaller } from './features/gestion-operativa-taller-tecnico/pages/disponibilidad-taller/disponibilidad-taller';
+import { GestionarServiciosCobertura } from './features/gestion-operativa-taller-tecnico/pages/gestionar-servicios-cobertura/gestionar-servicios-cobertura';
 import { GestionarTecnicos } from './features/gestion-operativa-taller-tecnico/pages/gestionar-tecnicos/gestionar-tecnicos';
 import { GestionarUnidades } from './features/gestion-operativa-taller-tecnico/pages/gestionar-unidades/gestionar-unidades';
 import { InicioTaller } from './features/gestion-operativa-taller-tecnico/pages/inicio-taller/inicio-taller';
@@ -44,6 +45,10 @@ export const routes: Routes = [
       {
         path: 'disponibilidad',
         component: DisponibilidadTaller,
+      },
+      {
+        path: 'servicios',
+        component: GestionarServiciosCobertura,
       },
       {
         path: 'tecnicos',

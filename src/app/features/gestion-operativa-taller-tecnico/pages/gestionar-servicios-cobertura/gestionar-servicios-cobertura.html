@@ -1,0 +1,433 @@
+<div class="coverage-page">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <span class="card-kicker">Gestion Operativa de Taller y Tecnico</span>
+      <h2>Gestionar servicios y cobertura</h2>
+      <p>
+        Configura los servicios de auxilio que ofrece el taller y los tipos de
+        vehiculo que puede atender desde una sola pantalla operativa.
+      </p>
+
+      <div class="hero-actions">
+        <button type="button" class="primary-button" (click)="startCreateMode()">
+          Registrar servicio
+        </button>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading() || refreshing()"
+          (click)="loadManagementData()"
+        >
+          {{ refreshing() ? 'Actualizando...' : 'Actualizar lista' }}
+        </button>
+      </div>
+    </div>
+
+    <article class="hero-side-card">
+      <strong>Resumen operativo</strong>
+      <div class="hero-side-grid">
+        <div>
+          <small>Total</small>
+          <span>{{ totalServices() }}</span>
+        </div>
+        <div>
+          <small>Disponibles</small>
+          <span>{{ totalAvailable() }}</span>
+        </div>
+        <div>
+          <small>Deshabilitados</small>
+          <span>{{ totalDisabled() }}</span>
+        </div>
+        <div>
+          <small>Precio promedio</small>
+          <span>{{ averagePrice() | number: '1.0-2' }}</span>
+        </div>
+      </div>
+    </article>
+  </header>
+
+  @if (loading()) {
+    <section class="empty-card">
+      <strong>Cargando configuracion operativa...</strong>
+      <p>Estamos consultando servicios de auxilio y tipos de vehiculo del taller.</p>
+    </section>
+  } @else {
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span>Servicios</span>
+        <strong>{{ totalServices() }}</strong>
+        <small>Registrados por el taller</small>
+      </article>
+      <article class="metric-card">
+        <span>Disponibles</span>
+        <strong>{{ totalAvailable() }}</strong>
+        <small>Listos para ofrecerse</small>
+      </article>
+      <article class="metric-card">
+        <span>Deshabilitados</span>
+        <strong>{{ totalDisabled() }}</strong>
+        <small>Fuera de oferta</small>
+      </article>
+      <article class="metric-card">
+        <span>Precio promedio</span>
+        <strong>{{ averagePrice() | number: '1.0-2' }}</strong>
+        <small>Referencial actual</small>
+      </article>
+    </section>
+
+    <section class="management-grid">
+      <article class="management-card">
+        <div class="section-heading">
+          <div>
+            <h3>Servicios de auxilio ofrecidos</h3>
+            <p>Lista, registra, ajusta precio y controla disponibilidad del catalogo propio.</p>
+          </div>
+        </div>
+
+        @if (servicesError()) {
+          <div class="feedback-box error">{{ servicesError() }}</div>
+        }
+
+        @if (servicesSuccess()) {
+          <div class="feedback-box success">{{ servicesSuccess() }}</div>
+        }
+
+        <form class="filters-grid" [formGroup]="filtersForm">
+          <label class="field field--search">
+            <span>Buscar servicio</span>
+            <input
+              type="text"
+              formControlName="search"
+              placeholder="Ej. CAMBIO_LLANTA"
+            />
+          </label>
+
+          <label class="field">
+            <span>Disponibilidad</span>
+            <select formControlName="disponibilidad">
+              <option value="todos">Todos</option>
+              <option value="disponibles">Disponibles</option>
+              <option value="no_disponibles">No disponibles</option>
+            </select>
+          </label>
+        </form>
+
+        @if (filteredServices().length === 0) {
+          <div class="empty-card compact">
+            <strong>Sin servicios visibles</strong>
+            <p>No hay resultados para los filtros actuales o aun no registraste servicios.</p>
+          </div>
+        } @else {
+          <div class="table-shell">
+            <div class="table-head">
+              <span>Servicio</span>
+              <span>Descripcion</span>
+              <span>Precio</span>
+              <span>Disponible</span>
+              <span>Acciones</span>
+            </div>
+
+            @for (service of filteredServices(); track trackService($index, service)) {
+              <div
+                class="table-row"
+                [class.is-selected]="selectedServiceId() === service.id_taller_auxilio"
+              >
+                <div class="table-cell service-cell">
+                  <span class="service-chip">#{{ service.id_tipo_auxilio }}</span>
+                  <div>
+                    <strong>{{ service.nombre_tipo_auxilio }}</strong>
+                    <small>ID servicio {{ service.id_taller_auxilio }}</small>
+                  </div>
+                </div>
+
+                <div class="table-cell">
+                  <small>{{ service.descripcion_tipo_auxilio || 'Sin descripcion expuesta.' }}</small>
+                </div>
+
+                <div class="table-cell">
+                  <strong>{{ service.precio_referencial | number: '1.0-2' }}</strong>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getAvailabilityBadgeClass(service.disponible)">
+                    {{ service.disponible ? 'Disponible' : 'No disponible' }}
+                  </span>
+                </div>
+
+                <div class="table-cell actions-cell">
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="selectService(service.id_taller_auxilio, 'view')"
+                  >
+                    Ver
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="editService(service.id_taller_auxilio)"
+                  >
+                    Editar
+                  </button>
+                  @if (service.disponible) {
+                    <button
+                      type="button"
+                      class="danger-button action-button"
+                      [disabled]="serviceActionId() === service.id_taller_auxilio"
+                      (click)="disableService(service)"
+                    >
+                      {{ serviceActionId() === service.id_taller_auxilio ? 'Procesando...' : 'Deshabilitar' }}
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="secondary-button action-button"
+                      [disabled]="serviceActionId() === service.id_taller_auxilio"
+                      (click)="enableService(service)"
+                    >
+                      {{ serviceActionId() === service.id_taller_auxilio ? 'Procesando...' : 'Habilitar' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </article>
+
+      <div class="side-stack">
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>
+                @if (isCreateMode()) {
+                  Registrar servicio
+                } @else if (isEditMode()) {
+                  Editar servicio
+                } @else {
+                  Detalle del servicio
+                }
+              </h3>
+              <p>
+                @if (isCreateMode()) {
+                  Registra un servicio usando `id_tipo_auxilio` porque el backend no expone el catalogo.
+                } @else if (isEditMode()) {
+                  Ajusta precio referencial o disponibilidad del servicio seleccionado.
+                } @else {
+                  Revisa el estado del servicio y vuelve al modo edicion cuando lo necesites.
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (serviceSelectionLoading()) {
+            <div class="empty-card compact">
+              <strong>Cargando detalle...</strong>
+              <p>Estamos sincronizando el servicio seleccionado.</p>
+            </div>
+          } @else if (isViewMode()) {
+            @if (selectedService(); as service) {
+              <div class="detail-card">
+                <div class="detail-head">
+                  <span class="service-chip large">#{{ service.id_tipo_auxilio }}</span>
+                  <div>
+                    <strong>{{ service.nombre_tipo_auxilio }}</strong>
+                    <small>{{ service.descripcion_tipo_auxilio || 'Sin descripcion expuesta por backend.' }}</small>
+                  </div>
+                </div>
+
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span>ID tipo auxilio</span>
+                    <strong>{{ service.id_tipo_auxilio }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Precio referencial</span>
+                    <strong>{{ service.precio_referencial | number: '1.0-2' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Disponibilidad</span>
+                    <strong>{{ service.disponible ? 'Disponible' : 'No disponible' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Registro operativo</span>
+                    <strong>#{{ service.id_taller_auxilio }}</strong>
+                  </div>
+                </div>
+
+                <div class="helper-card accent">
+                  <strong>Catalogo de tipos de auxilio</strong>
+                  <span>
+                    El backend actual no expone un `GET` de tipos de auxilio. Para registrar
+                    servicios nuevos, esta pantalla usa `id_tipo_auxilio` numerico con validacion.
+                  </span>
+                </div>
+
+                <div class="detail-actions">
+                  <button
+                    type="button"
+                    class="primary-button"
+                    (click)="editService(service.id_taller_auxilio)"
+                  >
+                    Editar servicio
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="startCreateMode()"
+                  >
+                    Nuevo servicio
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-card compact">
+                <strong>Selecciona un servicio</strong>
+                <p>El detalle aparecera aqui cuando elijas un servicio del listado.</p>
+              </div>
+            }
+          } @else {
+            <form class="form-grid" [formGroup]="serviceForm">
+              @if (isCreateMode()) {
+                <label class="field">
+                  <span>ID tipo auxilio</span>
+                  <input type="number" min="1" formControlName="id_tipo_auxilio" />
+                </label>
+              } @else if (selectedService(); as service) {
+                <div class="helper-card">
+                  <strong>Tipo de auxilio bloqueado</strong>
+                  <span>
+                    El backend solo permite registrar el `id_tipo_auxilio` al crear. El servicio actual usa
+                    `{{ service.nombre_tipo_auxilio }}` con id `{{ service.id_tipo_auxilio }}`.
+                  </span>
+                </div>
+              }
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Precio referencial</span>
+                  <input type="number" min="0" step="0.01" formControlName="precio_referencial" />
+                </label>
+
+                <label class="checkbox-field">
+                  <input type="checkbox" formControlName="disponible" />
+                  <span>Disponible para ofrecer</span>
+                </label>
+              </div>
+
+              <div class="helper-card">
+                <strong>Registro asistido</strong>
+                <span>
+                  No existe endpoint de catalogo de tipos de auxilio. Por eso el registro se resuelve
+                  con `id_tipo_auxilio` numerico y el backend valida si ese id existe.
+                </span>
+              </div>
+
+              <div class="detail-actions">
+                <button
+                  type="button"
+                  class="primary-button"
+                  [disabled]="savingService() || (isEditMode() && !hasServiceChanges())"
+                  (click)="saveService()"
+                >
+                  @if (savingService()) {
+                    Guardando...
+                  } @else if (isCreateMode()) {
+                    Registrar servicio
+                  } @else {
+                    Guardar cambios
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="secondary-button"
+                  [disabled]="savingService()"
+                  (click)="cancelServiceEditor()"
+                >
+                  {{ isCreateMode() ? 'Limpiar formulario' : 'Cancelar edicion' }}
+                </button>
+              </div>
+            </form>
+          }
+        </article>
+      </div>
+    </section>
+
+    <section class="management-card">
+      <div class="section-heading">
+        <div>
+          <h3>Tipos de vehiculo que atiende</h3>
+          <p>Selecciona la cobertura vehicular del taller. El guardado reemplaza toda la lista.</p>
+        </div>
+      </div>
+
+      @if (coverageError()) {
+        <div class="feedback-box error">{{ coverageError() }}</div>
+      }
+
+      @if (coverageSuccess()) {
+        <div class="feedback-box success">{{ coverageSuccess() }}</div>
+      }
+
+      @if (vehicleCatalog().length === 0) {
+        <div class="empty-card compact">
+          <strong>Sin tipos de vehiculo</strong>
+          <p>El backend no devolvio tipos de vehiculo disponibles.</p>
+        </div>
+      } @else {
+        <div class="vehicle-grid">
+          @for (vehicleType of vehicleCatalog(); track trackVehicleType($index, vehicleType)) {
+            <label
+              class="vehicle-card"
+              [class.is-selected]="isVehicleSelected(vehicleType.id_tipo_vehiculo)"
+            >
+              <input
+                type="checkbox"
+                [checked]="isVehicleSelected(vehicleType.id_tipo_vehiculo)"
+                (change)="toggleVehicleType(vehicleType.id_tipo_vehiculo, $event)"
+              />
+              <div class="vehicle-card__content">
+                <div class="vehicle-card__head">
+                  <strong>{{ vehicleType.nombre }}</strong>
+                  <span
+                    [class]="
+                      isVehicleSelected(vehicleType.id_tipo_vehiculo)
+                        ? 'status-pill status-pill--available'
+                        : 'status-pill status-pill--disabled'
+                    "
+                  >
+                    {{
+                      isVehicleSelected(vehicleType.id_tipo_vehiculo)
+                        ? 'Seleccionado'
+                        : 'No seleccionado'
+                    }}
+                  </span>
+                </div>
+                <span>{{ vehicleType.descripcion || 'Sin descripcion adicional.' }}</span>
+              </div>
+            </label>
+          }
+        </div>
+
+        <div class="helper-card accent">
+          <strong>Reemplazo completo</strong>
+          <span>
+            El backend de CU14 no tiene POST, PATCH ni DELETE separados. Esta pantalla guarda toda
+            la seleccion con `PUT /configuracion/tipos-vehiculo`.
+          </span>
+        </div>
+
+        <div class="detail-actions">
+          <button
+            type="button"
+            class="primary-button"
+            [disabled]="coverageSaving() || !hasCoverageChanges() || selectedVehicleIds().length === 0"
+            (click)="saveVehicleCoverage()"
+          >
+            {{ coverageSaving() ? 'Guardando...' : 'Guardar configuracion' }}
+          </button>
+        </div>
+      }
+    </section>
+  }
+</div>

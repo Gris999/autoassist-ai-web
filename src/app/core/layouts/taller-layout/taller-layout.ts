@@ -109,8 +109,8 @@ export class TallerLayout {
         items: [
           { label: 'Inicio del taller', route: '/taller' },
           { label: 'Disponibilidad del taller', route: '/taller/disponibilidad' },
-          { label: 'Servicios ofrecidos', disabled: true, note: 'Proximamente' },
-          { label: 'Tipos de vehiculo', disabled: true, note: 'Proximamente' },
+          { label: 'Servicios ofrecidos', route: '/taller/servicios', note: 'En la misma pantalla' },
+          { label: 'Tipos de vehiculo', route: '/taller/servicios', note: 'En la misma pantalla' },
           { label: 'Tecnicos', route: '/taller/tecnicos' },
           {
             label: 'Disponibilidad del tecnico',

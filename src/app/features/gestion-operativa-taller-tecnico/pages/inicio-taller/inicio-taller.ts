@@ -178,15 +178,17 @@ export class InicioTaller implements OnInit {
       },
       {
         title: 'Servicios ofrecidos',
-        description: 'Habilita los servicios que tu taller podra tomar mas adelante.',
+        description: 'Configura los servicios de auxilio activos y sus precios referenciales.',
         helper: 'Gestion Operativa',
-        status: 'upcoming',
+        route: '/taller/servicios',
+        status: 'available',
       },
       {
         title: 'Tipos de vehiculo',
-        description: 'Define los vehiculos compatibles para filtrar mejores solicitudes.',
+        description: 'Define los vehiculos compatibles que el taller puede atender.',
         helper: 'Gestion Operativa',
-        status: 'upcoming',
+        route: '/taller/servicios',
+        status: 'available',
       },
       {
         title: 'Incidentes disponibles',

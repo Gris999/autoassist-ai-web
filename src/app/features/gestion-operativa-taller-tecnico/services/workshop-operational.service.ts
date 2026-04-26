@@ -22,6 +22,14 @@ import {
   UnidadMovil,
 } from '../models/mobile-unit-management.model';
 import {
+  ActualizarServicioAuxilioRequest,
+  ActualizarTiposVehiculoRequest,
+  CrearServicioAuxilioRequest,
+  ServicioAuxilioTaller,
+  TipoVehiculo,
+  TiposVehiculoConfiguracionResponse,
+} from '../models/service-coverage-management.model';
+import {
   UpdateWorkshopAvailabilityRequest,
   WorkshopAvailability,
 } from '../models/workshop-availability.model';
@@ -48,6 +56,31 @@ export class WorkshopOperationalService {
     );
   }
 
+  getTiposVehiculoCatalogo(): Observable<TipoVehiculo[]> {
+    return this.http.get<TipoVehiculo[]>(
+      `${this.apiUrl}/operativo/taller/tipos-vehiculo`
+    );
+  }
+
+  getTiposVehiculoConfigurados(): Observable<TiposVehiculoConfiguracionResponse> {
+    return this.http.get<TiposVehiculoConfiguracionResponse>(
+      `${this.apiUrl}/operativo/taller/configuracion/tipos-vehiculo`
+    );
+  }
+
+  actualizarTiposVehiculoConfigurados(
+    idsTipoVehiculo: number[]
+  ): Observable<TiposVehiculoConfiguracionResponse> {
+    const payload: ActualizarTiposVehiculoRequest = {
+      ids_tipo_vehiculo: idsTipoVehiculo,
+    };
+
+    return this.http.put<TiposVehiculoConfiguracionResponse>(
+      `${this.apiUrl}/operativo/taller/configuracion/tipos-vehiculo`,
+      payload
+    );
+  }
+
   getTechnicianAvailability(): Observable<DisponibilidadTecnicoResponse> {
     return this.http.get<DisponibilidadTecnicoResponse>(
       `${this.apiUrl}/operativo/taller/tecnico/disponibilidad`
@@ -60,6 +93,40 @@ export class WorkshopOperationalService {
     return this.http.put<DisponibilidadTecnicoResponse>(
       `${this.apiUrl}/operativo/taller/tecnico/disponibilidad`,
       payload
+    );
+  }
+
+  getServiciosAuxilioTaller(): Observable<ServicioAuxilioTaller[]> {
+    return this.http.get<ServicioAuxilioTaller[]>(
+      `${this.apiUrl}/operativo/taller/servicios-auxilio`
+    );
+  }
+
+  registrarServicioAuxilio(
+    payload: CrearServicioAuxilioRequest
+  ): Observable<ServicioAuxilioTaller> {
+    return this.http.post<ServicioAuxilioTaller>(
+      `${this.apiUrl}/operativo/taller/servicios-auxilio`,
+      payload
+    );
+  }
+
+  actualizarServicioAuxilio(
+    idTallerAuxilio: number,
+    payload: ActualizarServicioAuxilioRequest
+  ): Observable<ServicioAuxilioTaller> {
+    return this.http.put<ServicioAuxilioTaller>(
+      `${this.apiUrl}/operativo/taller/servicios-auxilio/${idTallerAuxilio}`,
+      payload
+    );
+  }
+
+  deshabilitarServicioAuxilio(
+    idTallerAuxilio: number
+  ): Observable<ServicioAuxilioTaller> {
+    return this.http.patch<ServicioAuxilioTaller>(
+      `${this.apiUrl}/operativo/taller/servicios-auxilio/${idTallerAuxilio}/deshabilitar`,
+      {}
     );
   }
 
