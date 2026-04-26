@@ -1,13 +1,96 @@
 <div class="detail-page">
   <header class="detail-header">
     <div>
-      <h1>Detalle de solicitud</h1>
-      <p>Base para revisar el incidente y responder la atencion.</p>
+      <span class="incident-id">Incidente #{{ idIncidente || 'N/D' }}</span>
+      <h1>Analisis automatico del incidente</h1>
+      <p>
+        El sistema evalua la descripcion, evidencias y contexto del incidente para sugerir una
+        clasificacion, prioridad y acciones siguientes.
+      </p>
     </div>
+
+    <a class="back-link" [routerLink]="backRoute()">Volver</a>
   </header>
 
-  <section class="detail-card">
-    <strong>Proximo paso</strong>
-    <p>Aqui conectaremos la respuesta a la solicitud, asignacion de recursos y estado del servicio.</p>
+  <section class="detail-card action-card">
+    <div>
+      <strong>CU25 Analizar incidente automaticamente</strong>
+      <p>
+        Ejecuta el analisis cada vez que exista nueva evidencia para refrescar el resultado mas
+        reciente en pantalla.
+      </p>
+    </div>
+
+    <button type="button" (click)="analizarIncidente()" [disabled]="loadingAnalysis()">
+      {{ loadingAnalysis() ? 'Procesando informacion...' : 'Analizar incidente' }}
+    </button>
   </section>
+
+  @if (loadingAnalysis()) {
+    <div class="feedback-box info">Analizando la informacion del incidente...</div>
+  }
+
+  @if (errorMessage()) {
+    <div class="feedback-box error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="feedback-box success">{{ successMessage() }}</div>
+  }
+
+  @if (analysis(); as result) {
+    <section class="analysis-panel">
+      <div class="analysis-heading">
+        <div>
+          <span class="section-kicker">Resultado IA</span>
+          <h2>Resultado del analisis automatico</h2>
+        </div>
+
+        <span [class]="getPriorityClass(result.prioridad)">
+          {{ getPriorityLabel(result.prioridad) }}
+        </span>
+      </div>
+
+      <div class="analysis-grid">
+        <div class="metric">
+          <span>Clasificacion</span>
+          <strong>{{ result.clasificacion_ia || 'No determinada' }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Confianza</span>
+          <strong>{{ confidencePercent() }}%</strong>
+          <div class="confidence-track" aria-hidden="true">
+            <span [style.width.%]="confidencePercent()"></span>
+          </div>
+        </div>
+
+        <div class="metric">
+          <span>Prioridad estimada</span>
+          <strong>{{ getPriorityLabel(result.prioridad) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Requiere mas informacion</span>
+          <strong>{{ result.requiere_mas_info ? 'Si' : 'No' }}</strong>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <span>Resumen del analisis</span>
+        <p>{{ result.resumen_ia || 'Sin resumen disponible.' }}</p>
+      </div>
+
+      @if (result.requiere_mas_info && result.preguntas_sugeridas.length > 0) {
+        <div class="questions-section">
+          <h3>Informacion adicional recomendada</h3>
+          <div class="question-list">
+            @for (question of result.preguntas_sugeridas; track question) {
+              <div class="question-item">{{ question }}</div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+  }
 </div>

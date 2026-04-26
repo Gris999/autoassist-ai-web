@@ -1,12 +1,12 @@
 <div class="taller-shell" [class.sidebar-is-collapsed]="sidebarCollapsed()">
   <aside class="sidebar" [class.is-collapsed]="sidebarCollapsed()">
     <div class="sidebar-top">
-      <a class="brand" routerLink="/taller">
+      <a class="brand" [routerLink]="isTechnicianPanel() ? '/tecnico' : '/taller'">
         <span class="brand-mark">A</span>
         @if (!sidebarCollapsed()) {
           <div>
             <strong>AutoAssist AI</strong>
-            <span>Panel taller</span>
+            <span>{{ panelLabel() }}</span>
           </div>
         }
       </a>
@@ -17,7 +17,7 @@
         (click)="toggleSidebar()"
         [attr.aria-label]="sidebarCollapsed() ? 'Expandir menu' : 'Colapsar menu'"
       >
-        {{ sidebarCollapsed() ? '›' : '‹' }}
+        {{ sidebarCollapsed() ? '>' : '<' }}
       </button>
     </div>
 
@@ -32,7 +32,7 @@
     </section>
 
     <nav class="sidebar-nav">
-      @for (group of navGroups; track group.title) {
+      @for (group of navGroups(); track group.title) {
         <section class="nav-group">
           <button
             class="group-toggle"
@@ -46,7 +46,7 @@
               <span class="group-badge">{{ group.shortLabel }}</span>
             } @else {
               <span class="group-title">{{ group.title }}</span>
-              <span class="group-arrow">{{ activeGroup() === group.title ? '−' : '+' }}</span>
+              <span class="group-arrow">{{ activeGroup() === group.title ? '-' : '+' }}</span>
             }
           </button>
 
@@ -58,7 +58,7 @@
                     class="nav-item"
                     [routerLink]="item.route"
                     routerLinkActive="active"
-                    [routerLinkActiveOptions]="{ exact: item.route === '/taller' }"
+                    [routerLinkActiveOptions]="{ exact: item.route === '/taller' || item.route === '/tecnico' }"
                   >
                     <span>{{ item.label }}</span>
                     @if (item.note) {
@@ -90,7 +90,7 @@
     <header class="topbar">
       <div class="topbar-actions">
         <div class="search-box">
-          <input type="text" placeholder="Buscar incidente o tecnico" />
+          <input type="text" [placeholder]="searchPlaceholder()" />
         </div>
         <span class="avatar">{{ workshopProfile().initials }}</span>
       </div>

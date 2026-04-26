@@ -1,49 +1,66 @@
 <div class="workshop-home">
   <header class="hero-card">
     <div class="hero-copy">
-      <p class="hero-kicker">Inicio</p>
-      <h1>Resumen del taller</h1>
-      <p>Solicitudes, disponibilidad y accesos rapidos.</p>
+      <p class="hero-kicker">{{ homeCopy().kicker }}</p>
+      <h1>{{ homeCopy().title }}</h1>
+      <p>{{ homeCopy().subtitle }}</p>
 
       <div class="hero-actions">
-        <a class="hero-link primary" routerLink="/taller/solicitudes">
-          Ver incidentes disponibles
+        <a class="hero-link primary" [routerLink]="homeCopy().primaryRoute">
+          {{ homeCopy().primaryLabel }}
         </a>
-        <a class="hero-link secondary" routerLink="/taller/disponibilidad">
-          Ajustar disponibilidad
-        </a>
+        @if (isTechnicianHome()) {
+          <button class="hero-link secondary" type="button" disabled>
+            {{ homeCopy().secondaryLabel }}
+          </button>
+        } @else {
+          <a class="hero-link secondary" routerLink="/taller/disponibilidad">
+            {{ homeCopy().secondaryLabel }}
+          </a>
+        }
       </div>
     </div>
 
     <article class="status-card">
       <div class="status-head">
-        <h2>Estado del taller</h2>
-        <a class="status-link" routerLink="/taller/disponibilidad">Editar</a>
+        <h2>{{ isTechnicianHome() ? 'Estado del tecnico' : 'Estado del taller' }}</h2>
+        @if (!isTechnicianHome()) {
+          <a class="status-link" routerLink="/taller/disponibilidad">Editar</a>
+        }
       </div>
 
       <p>{{ availabilityMessage() }}</p>
       <span>
-        @if (workshopAvailability(); as availability) {
+        @if (isTechnicianHome()) {
+          Jornada operativa | Atencion en ruta
+        } @else if (workshopAvailability(); as availability) {
           {{ availability.nombre_taller }} | {{ availability.radio_cobertura_km }} km
         } @else {
           Cargando...
         }
       </span>
 
-      <label class="availability-toggle" [class.is-disabled]="availabilityLoading() || availabilitySaving()">
-        <input
-          type="checkbox"
-          [checked]="workshopAvailability()?.disponible ?? false"
-          [disabled]="availabilityLoading() || availabilitySaving()"
-          (change)="onAvailabilityChange($event)"
-        />
-        <span class="toggle-track">
-          <span class="toggle-thumb"></span>
-        </span>
-        <span class="toggle-label">
-          {{ workshopAvailability()?.disponible ? 'Disponible' : 'No disponible' }}
-        </span>
-      </label>
+      @if (isTechnicianHome()) {
+        <div class="technician-state">
+          <span>Disponible para asignaciones</span>
+          <small>La actualizacion manual se habilitara en el caso de uso correspondiente.</small>
+        </div>
+      } @else {
+        <label class="availability-toggle" [class.is-disabled]="availabilityLoading() || availabilitySaving()">
+          <input
+            type="checkbox"
+            [checked]="workshopAvailability()?.disponible ?? false"
+            [disabled]="availabilityLoading() || availabilitySaving()"
+            (change)="onAvailabilityChange($event)"
+          />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-label">
+            {{ workshopAvailability()?.disponible ? 'Disponible' : 'No disponible' }}
+          </span>
+        </label>
+      }
 
       @if (availabilitySaving()) {
         <small class="status-helper">Guardando disponibilidad...</small>
@@ -85,7 +102,7 @@
   <section class="panel-section">
     <div class="section-heading with-toggle">
       <div>
-        <h2>Accesos del taller</h2>
+        <h2>{{ isTechnicianHome() ? 'Accesos del tecnico por paquete' : 'Accesos del taller por paquete' }}</h2>
       </div>
       <button class="panel-button" type="button" (click)="toggleSection('quick')">
         {{ quickAccessOpen() ? 'Ocultar' : 'Mostrar' }}
@@ -94,7 +111,7 @@
 
     @if (quickAccessOpen()) {
       <div class="quick-grid">
-        @for (card of quickAccessCards; track card.title) {
+        @for (card of quickAccessCards(); track card.title) {
           <article class="quick-card" [class.is-upcoming]="card.status === 'upcoming'">
             <div class="quick-head">
               <span class="quick-helper">{{ card.helper }}</span>
@@ -138,7 +155,13 @@
         <article class="next-step-card">
           <h2>Siguiente paso</h2>
           <p>
-            {{ loading() ? 'Cargando pendientes...' : 'Revisar incidentes disponibles y responder primero los casos urgentes.' }}
+            {{
+              loading()
+                ? 'Cargando pendientes...'
+                : isTechnicianHome()
+                  ? 'Revisar solicitudes asignadas y actualizar el avance del servicio cuando corresponda.'
+                  : 'Revisar incidentes disponibles y responder primero los casos urgentes.'
+            }}
           </p>
         </article>
       </div>

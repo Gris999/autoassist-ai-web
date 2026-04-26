@@ -31,13 +31,20 @@ export class TallerLayout {
   private readonly router = inject(Router);
   readonly activeGroup = signal('Gestion Operativa de Taller y Tecnico');
   readonly sidebarCollapsed = signal(false);
+  readonly isTechnicianPanel = computed(() => this.router.url.startsWith('/tecnico'));
+  readonly panelLabel = computed(() =>
+    this.isTechnicianPanel() ? 'Panel tecnico' : 'Panel taller'
+  );
+  readonly searchPlaceholder = computed(() =>
+    this.isTechnicianPanel() ? 'Buscar asignacion o incidente' : 'Buscar incidente o tecnico'
+  );
 
   readonly workshopProfile = computed(() => {
     const user = this.tokenService.getCurrentUser();
     if (!user) {
       return {
-        initials: 'T',
-        name: 'Panel del taller',
+        initials: this.isTechnicianPanel() ? 'TE' : 'T',
+        name: this.isTechnicianPanel() ? 'Panel del tecnico' : 'Panel del taller',
         subtitle: 'Cuenta habilitada',
       };
     }
@@ -47,59 +54,102 @@ export class TallerLayout {
       .toUpperCase();
 
     return {
-      initials: initials || 'T',
+      initials: initials || (this.isTechnicianPanel() ? 'TE' : 'T'),
       name: `${user.nombres} ${user.apellidos}`.trim(),
       subtitle: user.email,
     };
   });
 
-  readonly navGroups: NavGroup[] = [
-    {
-      title: 'Gestion Operativa de Taller y Tecnico',
-      shortLabel: 'OT',
-      items: [
-        { label: 'Inicio del taller', route: '/taller' },
-        { label: 'Disponibilidad del taller', route: '/taller/disponibilidad' },
-        { label: 'Servicios ofrecidos', disabled: true, note: 'Proximamente' },
-        { label: 'Tipos de vehiculo', disabled: true, note: 'Proximamente' },
-        { label: 'Tecnicos', disabled: true, note: 'Proximamente' },
-        { label: 'Disponibilidad del tecnico', disabled: true, note: 'Proximamente' },
-        { label: 'Especialidades', disabled: true, note: 'Proximamente' },
-        { label: 'Unidades moviles', disabled: true, note: 'Proximamente' },
-      ],
-    },
-    {
-      title: 'Gestion de Incidentes y Atencion',
-      shortLabel: 'IA',
-      items: [
-        { label: 'Incidentes disponibles', route: '/taller/solicitudes' },
-        { label: 'Responder solicitud', disabled: true, note: 'Siguiente paso' },
-        { label: 'Asignar recursos', disabled: true, note: 'Siguiente paso' },
-        { label: 'Estado del servicio', disabled: true, note: 'Siguiente paso' },
-      ],
-    },
-    {
-      title: 'Seguimiento y Monitoreo del Servicio',
-      shortLabel: 'SM',
-      items: [
-        { label: 'Notificaciones', disabled: true, note: 'Proximamente' },
-        { label: 'Historial', disabled: true, note: 'Proximamente' },
-      ],
-    },
-    {
-      title: 'Inteligencia y Gestion Estrategica',
-      shortLabel: 'IE',
-      items: [{ label: 'Comisiones', disabled: true, note: 'Proximamente' }],
-    },
-    {
-      title: 'Autenticacion y Seguridad',
-      shortLabel: 'AS',
-      items: [
-        { label: 'Perfil del taller', disabled: true, note: 'Proximamente' },
-        { label: 'Cerrar sesion', action: 'logout' },
-      ],
-    },
-  ];
+  readonly navGroups = computed<NavGroup[]>(() => {
+    if (this.isTechnicianPanel()) {
+      return [
+        {
+          title: 'Gestion Operativa',
+          shortLabel: 'GO',
+          items: [
+            { label: 'Inicio', route: '/tecnico' },
+          ],
+        },
+        {
+          title: 'Gestion de Incidentes',
+          shortLabel: 'IA',
+          items: [
+            { label: 'Mis asignaciones', route: '/tecnico/asignaciones' },
+            { label: 'Detalle del incidente', route: '/tecnico/incidentes/11' },
+          ],
+        },
+        {
+          title: 'Seguimiento',
+          shortLabel: 'SM',
+          items: [
+            { label: 'Seguimiento actual', route: '/tecnico/seguimiento' },
+          ],
+        },
+        {
+          title: 'Inteligencia',
+          shortLabel: 'IE',
+          items: [
+            { label: 'Analisis IA', route: '/tecnico/incidentes/11' },
+          ],
+        },
+        {
+          title: 'Seguridad',
+          shortLabel: 'AS',
+          items: [
+            { label: 'Cerrar sesion', action: 'logout' },
+          ],
+        },
+      ];
+    }
+
+    return [
+      {
+        title: 'Gestion Operativa de Taller y Tecnico',
+        shortLabel: 'OT',
+        items: [
+          { label: 'Inicio del taller', route: '/taller' },
+          { label: 'Disponibilidad del taller', route: '/taller/disponibilidad' },
+          { label: 'Servicios ofrecidos', disabled: true, note: 'Proximamente' },
+          { label: 'Tipos de vehiculo', disabled: true, note: 'Proximamente' },
+          { label: 'Tecnicos', disabled: true, note: 'Proximamente' },
+          { label: 'Disponibilidad del tecnico', disabled: true, note: 'Proximamente' },
+          { label: 'Especialidades', disabled: true, note: 'Proximamente' },
+          { label: 'Unidades moviles', disabled: true, note: 'Proximamente' },
+        ],
+      },
+      {
+        title: 'Gestion de Incidentes y Atencion',
+        shortLabel: 'IA',
+        items: [
+          { label: 'Incidentes disponibles', route: '/taller/solicitudes' },
+          { label: 'Responder solicitud', disabled: true, note: 'Siguiente paso' },
+          { label: 'Asignar recursos', disabled: true, note: 'Siguiente paso' },
+          { label: 'Estado del servicio', disabled: true, note: 'Siguiente paso' },
+        ],
+      },
+      {
+        title: 'Seguimiento y Monitoreo del Servicio',
+        shortLabel: 'SM',
+        items: [
+          { label: 'Notificaciones', disabled: true, note: 'Proximamente' },
+          { label: 'Historial', disabled: true, note: 'Proximamente' },
+        ],
+      },
+      {
+        title: 'Inteligencia y Gestion Estrategica',
+        shortLabel: 'IE',
+        items: [{ label: 'Comisiones', disabled: true, note: 'Proximamente' }],
+      },
+      {
+        title: 'Autenticacion y Seguridad',
+        shortLabel: 'AS',
+        items: [
+          { label: 'Perfil del taller', disabled: true, note: 'Proximamente' },
+          { label: 'Cerrar sesion', action: 'logout' },
+        ],
+      },
+    ];
+  });
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((value) => !value);

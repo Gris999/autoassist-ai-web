@@ -69,7 +69,7 @@ export class TokenService {
         return null;
       case 'tecnico':
       case 'técnico':
-        return null;
+        return '/tecnico';
       default:
         return null;
     }
