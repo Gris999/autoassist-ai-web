@@ -1,13 +1,411 @@
 <div class="detail-page">
-  <header class="detail-header">
-    <div>
-      <h1>Detalle de solicitud</h1>
-      <p>Base para revisar el incidente y responder la atencion.</p>
-    </div>
-  </header>
+  <div class="toolbar-row">
+    <button type="button" class="secondary-button" (click)="goBack()">
+      Volver a solicitudes
+    </button>
+  </div>
 
-  <section class="detail-card">
-    <strong>Proximo paso</strong>
-    <p>Aqui conectaremos la respuesta a la solicitud, asignacion de recursos y estado del servicio.</p>
-  </section>
+  @if (loading()) {
+    <section class="empty-card">
+      <strong>Cargando solicitud...</strong>
+      <p>Estamos obteniendo el detalle de la solicitud de atencion.</p>
+    </section>
+  } @else if (displayData(); as detail) {
+    <header class="hero-card">
+      <div class="hero-copy">
+        <p class="hero-kicker">Solicitud de atencion</p>
+        <h1>{{ detail.titulo_incidente }}</h1>
+        <p>{{ detail.descripcion_texto || 'Sin descripcion adicional.' }}</p>
+
+        <div class="hero-badges">
+          <span [class]="getStatusBadgeClass(detail.estado_solicitud)">
+            {{ detail.estado_solicitud }}
+          </span>
+          <span [class]="getStatusBadgeClass(detail.estado_servicio_actual)">
+            {{ detail.estado_servicio_actual }}
+          </span>
+          <span [class]="getPriorityBadgeClass(detail.prioridad)">
+            Prioridad {{ detail.prioridad }}
+          </span>
+        </div>
+      </div>
+
+      <article class="hero-side-card">
+        <strong>Resumen operativo</strong>
+        <div class="hero-side-grid">
+          <div>
+            <small>Distancia</small>
+            <span>
+              {{ detail.distancia_km !== null ? (detail.distancia_km | number: '1.1-1') + ' km' : 'No disponible' }}
+            </span>
+          </div>
+          <div>
+            <small>Puntaje</small>
+            <span>
+              {{ detail.puntaje_asignacion !== null ? (detail.puntaje_asignacion | number: '1.0-1') : 'No disponible' }}
+            </span>
+          </div>
+          <div>
+            <small>Fecha reporte</small>
+            <span>{{ formatDateTime(detail.fecha_reporte) }}</span>
+          </div>
+          <div>
+            <small>Fecha envio</small>
+            <span>{{ formatDateTime(detail.fecha_envio) }}</span>
+          </div>
+        </div>
+      </article>
+    </header>
+
+    @if (errorMessage()) {
+      <div class="feedback-box error">{{ errorMessage() }}</div>
+    }
+
+    @if (successMessage()) {
+      <div class="feedback-box success">{{ successMessage() }}</div>
+    }
+
+    @if (detailSourceMismatch()) {
+      <div class="feedback-box warning">
+        El listado actual no entrega `id_solicitud_taller`. Puedes visualizar datos basicos,
+        pero para aceptar o rechazar necesitas navegar con el identificador real de solicitud.
+      </div>
+    }
+
+    <section class="info-grid">
+      <article class="content-card">
+        <div class="section-heading">
+          <h2>Informacion general</h2>
+        </div>
+
+        <div class="info-list">
+          <div class="info-item">
+            <small>Tipo de incidente</small>
+            <strong>{{ detail.tipo_incidente }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Direccion</small>
+            <strong>{{ detail.direccion_referencia || 'No disponible' }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Latitud</small>
+            <strong>{{ detail.latitud || 'No disponible' }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Longitud</small>
+            <strong>{{ detail.longitud || 'No disponible' }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Estado de solicitud</small>
+            <strong>{{ detail.estado_solicitud }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Estado actual del servicio</small>
+            <strong>{{ detail.estado_servicio_actual }}</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="content-card">
+        <div class="section-heading">
+          <h2>Responder solicitud</h2>
+        </div>
+
+        @if (responseError()) {
+          <div class="feedback-box error">{{ responseError() }}</div>
+        }
+
+        @if (responseSuccess()) {
+          <div class="feedback-box success">{{ responseSuccess() }}</div>
+        }
+
+        <p class="section-copy">
+          Acepta para continuar con la asignacion operativa o rechaza si el taller no puede
+          atender el caso.
+        </p>
+
+        <div class="response-state-row">
+          <span [class]="getStatusBadgeClass(detail.estado_solicitud)">
+            {{ detail.estado_solicitud }}
+          </span>
+
+          @if (detail.fecha_respuesta) {
+            <small>Respondida: {{ formatDateTime(detail.fecha_respuesta) }}</small>
+          }
+        </div>
+
+        <div class="action-row">
+          <button
+            type="button"
+            class="primary-button"
+            [disabled]="responseLoading() || !canRespondRequest() || detailSourceMismatch()"
+            (click)="acceptRequest()"
+          >
+            {{ responseLoading() ? 'Procesando...' : 'Aceptar solicitud' }}
+          </button>
+
+          <button
+            type="button"
+            class="danger-button"
+            [disabled]="responseLoading() || !canRespondRequest() || detailSourceMismatch()"
+            (click)="requestRejectConfirmation()"
+          >
+            Rechazar solicitud
+          </button>
+        </div>
+
+        @if (confirmRejectOpen()) {
+          <div class="confirm-card">
+            <strong>Confirmar rechazo</strong>
+            <p>
+              Esta accion dejara la solicitud como rechazada y deshabilitara la asignacion
+              de recursos para este flujo.
+            </p>
+            <div class="action-row">
+              <button
+                type="button"
+                class="danger-button"
+                [disabled]="responseLoading()"
+                (click)="confirmReject()"
+              >
+                Confirmar rechazo
+              </button>
+              <button type="button" class="secondary-button" (click)="cancelRejectConfirmation()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        }
+      </article>
+    </section>
+
+    <section class="content-card">
+      <div class="section-heading">
+        <div>
+          <h2>Asignar recursos</h2>
+          <p class="section-copy">
+            Selecciona el tecnico y la unidad movil disponibles para atender el incidente.
+          </p>
+        </div>
+      </div>
+
+      @if (assignmentError()) {
+        <div class="feedback-box error">{{ assignmentError() }}</div>
+      }
+
+      @if (assignmentSuccess()) {
+        <div class="feedback-box success">{{ assignmentSuccess() }}</div>
+      }
+
+      @if (!isAccepted()) {
+        <div class="empty-card">
+          <strong>Asignacion bloqueada</strong>
+          <p>
+            Debes aceptar la solicitud antes de asignar tecnico y unidad movil.
+          </p>
+        </div>
+      } @else if (assignmentSummary(); as summary) {
+        <div class="assignment-summary">
+          <div class="info-item">
+            <small>Tecnico</small>
+            <strong>{{ assignedTechnicianName() }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Unidad movil</small>
+            <strong>{{ assignedVehicleLabel() }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Tiempo estimado</small>
+            <strong>
+              {{ summary.tiempo_estimado_min !== null ? summary.tiempo_estimado_min + ' min' : 'No definido' }}
+            </strong>
+          </div>
+          <div class="info-item">
+            <small>Estado de asignacion</small>
+            <strong>{{ summary.estado_asignacion }}</strong>
+          </div>
+          <div class="info-item info-item--full">
+            <small>Observaciones</small>
+            <strong>{{ summary.observaciones || 'Sin observaciones.' }}</strong>
+          </div>
+        </div>
+      } @else if (currentServiceState()) {
+        <div class="empty-card">
+          <strong>Asignacion ya registrada</strong>
+          <p>
+            El backend ya tiene una asignacion operativa para este incidente. Puedes continuar con
+            la actualizacion de estado.
+          </p>
+        </div>
+      } @else if (assignmentOptionsLoading()) {
+        <div class="empty-card">
+          <strong>Cargando recursos disponibles...</strong>
+          <p>Estamos consultando tecnicos y unidades moviles del taller.</p>
+        </div>
+      } @else {
+        <form class="form-grid" [formGroup]="assignmentForm">
+          <div class="field-grid">
+            <label class="field">
+              <span>Tecnico disponible</span>
+              <select formControlName="id_tecnico">
+                <option [ngValue]="null">Selecciona un tecnico</option>
+                @for (tecnico of tecnicos(); track tecnico.id_tecnico) {
+                  <option [ngValue]="tecnico.id_tecnico">
+                    {{ tecnico.nombres }} {{ tecnico.apellidos }} - {{ tecnico.telefono_contacto || 'Sin telefono' }}
+                  </option>
+                }
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Unidad movil disponible</span>
+              <select formControlName="id_unidad_movil">
+                <option [ngValue]="null">Selecciona una unidad</option>
+                @for (unidad of unidadesMoviles(); track unidad.id_unidad_movil) {
+                  <option [ngValue]="unidad.id_unidad_movil">
+                    {{ unidad.placa }} - {{ unidad.tipo_unidad }}
+                  </option>
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (tecnicos().length === 0 || unidadesMoviles().length === 0) {
+            <div class="feedback-box warning">
+              @if (tecnicos().length === 0 && unidadesMoviles().length === 0) {
+                No hay tecnicos ni unidades moviles disponibles para esta asignacion.
+              } @else if (tecnicos().length === 0) {
+                No hay tecnicos disponibles para este incidente.
+              } @else {
+                No hay unidades moviles disponibles para este incidente.
+              }
+            </div>
+          }
+
+          <div class="field-grid">
+            <label class="field">
+              <span>Tiempo estimado (min)</span>
+              <input type="number" min="0" formControlName="tiempo_estimado_min" placeholder="Ej. 35" />
+            </label>
+
+            <label class="field field--full">
+              <span>Observaciones</span>
+              <textarea
+                rows="4"
+                formControlName="observaciones"
+                placeholder="Detalle opcional para el equipo operativo"
+              ></textarea>
+            </label>
+          </div>
+
+          <div class="action-row">
+            <button
+              type="button"
+              class="primary-button"
+              [disabled]="assignmentLoading() || !canAssignResources() || tecnicos().length === 0 || unidadesMoviles().length === 0"
+              (click)="assignResources()"
+            >
+              {{ assignmentLoading() ? 'Asignando...' : 'Asignar recursos' }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+
+    <section class="content-card">
+      <div class="section-heading">
+        <div>
+          <h2>Actualizar estado del servicio</h2>
+          <p class="section-copy">
+            Registra el avance del servicio conforme al flujo operativo del taller.
+          </p>
+        </div>
+      </div>
+
+      @if (statusError()) {
+        <div class="feedback-box error">{{ statusError() }}</div>
+      }
+
+      @if (statusSuccess()) {
+        <div class="feedback-box success">{{ statusSuccess() }}</div>
+      }
+
+      @if (statusLoading()) {
+        <div class="empty-card">
+          <strong>Cargando estado actual...</strong>
+          <p>Estamos consultando el estado del incidente asignado.</p>
+        </div>
+      } @else if (!canUpdateStatus()) {
+        <div class="empty-card">
+          <strong>Estado no disponible</strong>
+          <p>
+            La actualizacion de estado se habilita cuando el incidente ya tiene una asignacion
+            de servicio registrada.
+          </p>
+        </div>
+      } @else if (currentServiceState(); as currentState) {
+        <div class="status-summary">
+          <div class="info-item">
+            <small>Estado actual</small>
+            <strong>{{ currentState.estado_servicio_actual }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Orden de flujo</small>
+            <strong>{{ currentState.orden_flujo_actual }}</strong>
+          </div>
+          <div class="info-item">
+            <small>Estado de asignacion</small>
+            <strong>{{ currentState.estado_asignacion || 'No disponible' }}</strong>
+          </div>
+        </div>
+
+        <form class="form-grid" [formGroup]="statusForm">
+          <div class="field-grid">
+            <label class="field">
+              <span>Nuevo estado</span>
+              <select formControlName="id_estado_servicio">
+                <option [ngValue]="null">Selecciona el siguiente estado</option>
+                @for (state of availableNextStates(); track state.id_estado_servicio) {
+                  <option [ngValue]="state.id_estado_servicio">
+                    {{ state.nombre }} - {{ state.descripcion }}
+                  </option>
+                }
+              </select>
+            </label>
+
+            <label class="field field--full">
+              <span>Detalle</span>
+              <textarea
+                rows="4"
+                formControlName="detalle"
+                placeholder="Descripcion opcional del avance del servicio"
+              ></textarea>
+            </label>
+          </div>
+
+          @if (availableNextStates().length === 0) {
+            <div class="feedback-box warning">
+              No hay un siguiente estado configurado desde la constante local para el estado actual.
+            </div>
+          }
+
+          <div class="action-row">
+            <button
+              type="button"
+              class="primary-button"
+              [disabled]="statusSaving() || availableNextStates().length === 0"
+              (click)="updateServiceStatus()"
+            >
+              {{ statusSaving() ? 'Actualizando...' : 'Actualizar estado' }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+  } @else {
+    <section class="empty-card">
+      <strong>No se encontro la solicitud</strong>
+      <p>No pudimos cargar la informacion requerida para este flujo.</p>
+    </section>
+  }
 </div>

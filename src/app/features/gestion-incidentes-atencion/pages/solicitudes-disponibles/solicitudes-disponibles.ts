@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
+import { IncidenteDisponible } from '../../models/incidente-atencion.model';
 import { IncidentesService } from '../../services/incidentes.service';
 
 @Component({
@@ -17,7 +18,7 @@ export class SolicitudesDisponibles implements OnInit {
 
   loading = true;
   errorMessage = '';
-  incidentes: any[] = [];
+  incidentes: IncidenteDisponible[] = [];
   readonly prioridadLabels: Record<string, string> = {
     '1': 'Alta',
     '2': 'Media',
@@ -49,5 +50,9 @@ export class SolicitudesDisponibles implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  getDetalleRouteId(incidente: IncidenteDisponible): number {
+    return incidente.id_solicitud_taller ?? incidente.id_incidente;
   }
 }
