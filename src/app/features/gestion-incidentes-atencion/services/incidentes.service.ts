@@ -1,5 +1,5 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment.development';
@@ -28,11 +28,11 @@ export interface AnalisisIncidenteResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class IncidentesService {
-  private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
   getIncidentesDisponibles(): Observable<IncidenteDisponible[]> {
     return this.http.get<IncidenteDisponible[]>(
@@ -40,7 +40,6 @@ export class IncidentesService {
     );
   }
 
-<<<<<<< HEAD
   getDetalleSolicitudAtencion(
     idSolicitudTaller: number
   ): Observable<SolicitudAtencionDetalle> {
@@ -100,12 +99,13 @@ export class IncidentesService {
     return this.http.patch<ActualizarEstadoIncidenteResponse>(
       `${this.apiUrl}/incidentes/taller/incidentes/${idIncidente}/estado`,
       body
-=======
+    );
+  }
+
   analizarIncidente(idIncidente: number): Observable<AnalisisIncidenteResponse> {
     return this.http.post<AnalisisIncidenteResponse>(
       `${this.apiUrl}/inteligencia/incidentes/${idIncidente}/analizar`,
       {}
->>>>>>> main
     );
   }
 }

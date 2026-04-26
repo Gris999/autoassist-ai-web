@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -101,7 +100,9 @@ export class DetalleSolicitud implements OnInit {
     detalle: [''],
   });
 
-  readonly displayData = computed(() => this.detail() ?? this.toPreviewDetail(this.previewIncident()));
+  readonly displayData = computed(
+    () => this.detail() ?? this.toPreviewDetail(this.previewIncident())
+  );
   readonly canRespondRequest = computed(() => {
     const detail = this.detail();
     return !!detail && detail.estado_solicitud === 'PENDIENTE';
@@ -270,9 +271,7 @@ export class DetalleSolicitud implements OnInit {
       rawValue.tiempo_estimado_min !== undefined &&
       rawValue.tiempo_estimado_min < 0
     ) {
-      this.assignmentError.set(
-        'El tiempo estimado no puede ser negativo.'
-      );
+      this.assignmentError.set('El tiempo estimado no puede ser negativo.');
       return;
     }
 
@@ -301,69 +300,10 @@ export class DetalleSolicitud implements OnInit {
           this.assignmentError.set(
             error?.error?.detail || 'No se pudo registrar la asignacion de recursos.'
           );
-=======
-import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
-
-import {
-  AnalisisIncidenteResponse,
-  IncidentesService,
-} from '../../services/incidentes.service';
-
-@Component({
-  selector: 'app-detalle-solicitud',
-  imports: [RouterLink],
-  templateUrl: './detalle-solicitud.html',
-  styleUrl: './detalle-solicitud.scss',
-})
-export class DetalleSolicitud {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly incidentesService = inject(IncidentesService);
-
-  readonly idIncidente = Number(this.route.snapshot.paramMap.get('id'));
-  readonly loadingAnalysis = signal(false);
-  readonly successMessage = signal('');
-  readonly errorMessage = signal('');
-  readonly analysis = signal<AnalisisIncidenteResponse | null>(null);
-  readonly isTechnicianView = computed(() => this.router.url.startsWith('/tecnico'));
-  readonly backRoute = computed(() =>
-    this.isTechnicianView() ? '/tecnico/asignaciones' : '/taller/solicitudes'
-  );
-
-  readonly confidencePercent = computed(() => {
-    const confidence = this.analysis()?.confianza_clasificacion ?? 0;
-    return Math.round(Math.max(0, Math.min(confidence, 1)) * 100);
-  });
-
-  analizarIncidente(): void {
-    this.successMessage.set('');
-    this.errorMessage.set('');
-
-    if (!Number.isFinite(this.idIncidente) || this.idIncidente <= 0) {
-      this.errorMessage.set('No se encontro un identificador valido para el incidente.');
-      return;
-    }
-
-    this.loadingAnalysis.set(true);
-
-    this.incidentesService
-      .analizarIncidente(this.idIncidente)
-      .pipe(finalize(() => this.loadingAnalysis.set(false)))
-      .subscribe({
-        next: (response) => {
-          this.analysis.set(response);
-          this.successMessage.set('Analisis completado correctamente.');
-        },
-        error: () => {
-          this.errorMessage.set('No fue posible analizar el incidente en este momento.');
->>>>>>> main
         },
       });
   }
 
-<<<<<<< HEAD
   updateServiceStatus(): void {
     const detail = this.detail();
     const currentState = this.currentServiceState();
@@ -383,9 +323,7 @@ export class DetalleSolicitud {
 
     const rawValue = this.statusForm.getRawValue();
     if (rawValue.id_estado_servicio === currentState.id_estado_servicio_actual) {
-      this.statusError.set(
-        'El nuevo estado no puede ser igual al estado actual.'
-      );
+      this.statusError.set('El nuevo estado no puede ser igual al estado actual.');
       return;
     }
 
@@ -402,9 +340,7 @@ export class DetalleSolicitud {
       .subscribe({
         next: (response) => {
           this.applyStatusUpdate(response);
-          this.statusSuccess.set(
-            'Estado del servicio actualizado correctamente.'
-          );
+          this.statusSuccess.set('Estado del servicio actualizado correctamente.');
           this.statusForm.reset({
             id_estado_servicio: null,
             detalle: '',
@@ -505,9 +441,7 @@ export class DetalleSolicitud {
             this.loadAssignmentOptions(response.id_incidente);
             this.loadCurrentState(response.id_incidente);
           } else {
-            this.responseSuccess.set(
-              'Solicitud rechazada correctamente.'
-            );
+            this.responseSuccess.set('Solicitud rechazada correctamente.');
             this.assignmentLocked.set(true);
             this.tecnicos.set([]);
             this.unidadesMoviles.set([]);
@@ -560,9 +494,7 @@ export class DetalleSolicitud {
         },
         error: (error) => {
           const detail = error?.error?.detail as string | undefined;
-          if (
-            detail?.includes('no tiene una asignacion de servicio registrada')
-          ) {
+          if (detail?.includes('no tiene una asignacion de servicio registrada')) {
             this.currentServiceState.set(null);
             return;
           }
@@ -584,7 +516,10 @@ export class DetalleSolicitud {
       id_taller: response.id_taller,
       id_estado_servicio_actual: response.id_estado_nuevo,
       estado_servicio_actual: response.estado_nuevo,
-      orden_flujo_actual: currentState?.orden_flujo ?? this.currentServiceState()?.orden_flujo_actual ?? 0,
+      orden_flujo_actual:
+        currentState?.orden_flujo ??
+        this.currentServiceState()?.orden_flujo_actual ??
+        0,
       estado_asignacion: response.estado_nuevo,
     });
 
@@ -636,28 +571,5 @@ export class DetalleSolicitud {
       id_estado_servicio_actual: preview.id_estado_servicio_actual,
       estado_servicio_actual: preview.estado_servicio_actual,
     };
-=======
-  getPriorityClass(priority: string | undefined): string {
-    const normalized = this.normalizePriority(priority);
-    return `priority-badge priority-badge--${normalized}`;
-  }
-
-  getPriorityLabel(priority: string | undefined): string {
-    if (!priority) {
-      return 'N/D';
-    }
-
-    return priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase();
-  }
-
-  private normalizePriority(priority: string | undefined): string {
-    const normalized = (priority ?? '').toLowerCase();
-
-    if (['baja', 'media', 'alta', 'critica'].includes(normalized)) {
-      return normalized;
-    }
-
-    return 'default';
->>>>>>> main
   }
 }

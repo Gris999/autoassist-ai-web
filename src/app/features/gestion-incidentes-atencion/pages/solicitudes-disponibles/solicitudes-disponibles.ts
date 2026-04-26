@@ -1,9 +1,8 @@
-import { Component, inject, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { IncidenteDisponible } from '../../models/incidente-atencion.model';
 import { IncidentesService } from '../../services/incidentes.service';
@@ -22,18 +21,15 @@ const TECNICO_INCIDENTE_ASIGNADO_ID = 11;
   styleUrl: './solicitudes-disponibles.scss',
 })
 export class SolicitudesDisponibles implements OnInit, OnDestroy {
-  private incidentesService = inject(IncidentesService);
-  private seguimientoTecnicoService = inject(SeguimientoTecnicoService);
-  private cdr = inject(ChangeDetectorRef);
-  private router = inject(Router);
-  private sanitizer = inject(DomSanitizer);
+  private readonly incidentesService = inject(IncidentesService);
+  private readonly seguimientoTecnicoService = inject(SeguimientoTecnicoService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly sanitizer = inject(DomSanitizer);
   private seguimientoSocket: WebSocket | null = null;
 
   loading = true;
   errorMessage = '';
-<<<<<<< HEAD
-  incidentes: IncidenteDisponible[] = [];
-=======
   successMessage = '';
   wsMessage = 'Conectando con seguimiento en tiempo real...';
   locationSaving = false;
@@ -45,8 +41,8 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
   readonly incidentLocationLabel = 'Punto del incidente asignado';
   readonly technicianIncidentId = TECNICO_INCIDENTE_ASIGNADO_ID;
   tracking: SeguimientoIncidenteResponse | null = null;
-  incidentes: any[] = [];
->>>>>>> main
+  incidentes: IncidenteDisponible[] = [];
+
   readonly prioridadLabels: Record<string, string> = {
     '1': 'Alta',
     '2': 'Media',
@@ -174,6 +170,7 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
 
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     this.incidentesService.getIncidentesDisponibles().subscribe({
       next: (response) => {
@@ -181,18 +178,18 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.errorMessage = 'No se pudieron cargar los incidentes disponibles.';
         this.loading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-<<<<<<< HEAD
   getDetalleRouteId(incidente: IncidenteDisponible): number {
     return incidente.id_solicitud_taller ?? incidente.id_incidente;
-=======
+  }
+
   cargarAsignacionesTecnico(): void {
     this.seguimientoSocket?.close();
     this.loading = false;
@@ -204,8 +201,14 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
         titulo: 'Incidente en camino',
         descripcion_texto:
           'Tienes una atencion activa. Abre seguimiento para ver la ruta y compartir tu ubicacion.',
+        fecha_reporte: new Date().toISOString(),
+        id_vehiculo: 0,
+        id_tipo_incidente: 0,
+        tipo_incidente: 'ASIGNADO',
         id_prioridad: 1,
-        id_estado_servicio_actual: this.estadoServicioActual,
+        prioridad: 'ALTA',
+        id_estado_servicio_actual: 0,
+        estado_servicio_actual: this.estadoServicioActual,
       },
     ];
     this.cdr.detectChanges();
@@ -221,8 +224,14 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
         titulo: 'Incidente asignado actual',
         descripcion_texto:
           'Asignacion activa del tecnico. El seguimiento se actualiza por WebSocket.',
+        fecha_reporte: new Date().toISOString(),
+        id_vehiculo: 0,
+        id_tipo_incidente: 0,
+        tipo_incidente: 'SEGUIMIENTO',
         id_prioridad: 1,
-        id_estado_servicio_actual: this.estadoServicioActual,
+        prioridad: 'ALTA',
+        id_estado_servicio_actual: 0,
+        estado_servicio_actual: this.estadoServicioActual,
       },
     ];
 
@@ -329,9 +338,12 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
       this.tracking = {
         id_incidente: Number(payload.id_incidente ?? this.technicianIncidentId),
         id_tecnico: Number(payload.id_tecnico ?? this.tracking?.id_tecnico ?? 11),
-        id_unidad_movil: Number(payload.id_unidad_movil ?? this.tracking?.id_unidad_movil ?? 11),
+        id_unidad_movil: Number(
+          payload.id_unidad_movil ?? this.tracking?.id_unidad_movil ?? 11
+        ),
         latitud_actual: payload.latitud_actual ?? payload.latitud ?? this.markerLatitude,
-        longitud_actual: payload.longitud_actual ?? payload.longitud ?? this.markerLongitude,
+        longitud_actual:
+          payload.longitud_actual ?? payload.longitud ?? this.markerLongitude,
         fecha_actualizacion:
           payload.fecha_actualizacion ?? this.tracking?.fecha_actualizacion ?? '',
         estado_asignacion:
@@ -395,6 +407,5 @@ export class SolicitudesDisponibles implements OnInit, OnDestroy {
 
   private toRadians(value: number): number {
     return (value * Math.PI) / 180;
->>>>>>> main
   }
 }

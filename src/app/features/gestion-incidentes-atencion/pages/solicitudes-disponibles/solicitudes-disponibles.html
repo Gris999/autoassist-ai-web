@@ -115,7 +115,7 @@
 
             <div class="card-meta">
               <span>#{{ incidente.id_incidente }}</span>
-              <span>{{ incidente.id_estado_servicio_actual || 'EN_CAMINO' }}</span>
+              <span>{{ incidente.estado_servicio_actual || 'EN_CAMINO' }}</span>
             </div>
 
             <p>{{ incidente.descripcion_texto }}</p>
@@ -143,7 +143,7 @@
 
     @if (!loading && incidentes.length > 0) {
       <div class="cards">
-        @for (incidente of incidentes; track $index) {
+        @for (incidente of incidentes; track incidente.id_incidente) {
           <div class="card">
             <div class="card-header">
               <h3>{{ incidente.titulo || 'Incidente sin titulo' }}</h3>
@@ -154,12 +154,16 @@
 
             <div class="card-meta">
               <span>#{{ incidente.id_incidente || 'N/D' }}</span>
-              <span>Estado {{ incidente.id_estado_servicio_actual || 'N/D' }}</span>
+              <span>Estado {{ incidente.estado_servicio_actual || 'N/D' }}</span>
             </div>
 
             <p>{{ incidente.descripcion_texto || 'Sin descripcion' }}</p>
 
-            <a class="details-link" [routerLink]="[detailBaseRoute, incidente.id_incidente]">
+            <a
+              class="details-link"
+              [routerLink]="['/taller/solicitudes', getDetalleRouteId(incidente)]"
+              [state]="{ incidentePreview: incidente }"
+            >
               Ver detalle
             </a>
           </div>
@@ -174,43 +178,9 @@
     </div>
   }
 
-<<<<<<< HEAD
-  @if (!loading && !errorMessage && incidentes.length === 0) {
-    <p class="empty-state">No hay incidentes disponibles por ahora.</p>
-  }
-
-  @if (!loading && incidentes.length > 0) {
-    <div class="cards">
-      @for (incidente of incidentes; track $index) {
-        <div class="card">
-          <div class="card-header">
-            <h3>{{ incidente.titulo || 'Incidente sin titulo' }}</h3>
-            <span class="priority-chip">
-              Prioridad {{ getPriorityLabel(incidente.id_prioridad) }}
-            </span>
-          </div>
-
-          <div class="card-meta">
-            <span>#{{ incidente.id_incidente || 'N/D' }}</span>
-            <span>Estado {{ incidente.id_estado_servicio_actual || 'N/D' }}</span>
-          </div>
-
-          <p>{{ incidente.descripcion_texto || 'Sin descripcion' }}</p>
-
-          <a
-            class="details-link"
-            [routerLink]="['/taller/solicitudes', getDetalleRouteId(incidente)]"
-            [state]="{ incidentePreview: incidente }"
-          >
-            Ver detalle
-          </a>
-        </div>
-      }
-=======
   @if (successMessage) {
     <div class="success-box">
       {{ successMessage }}
->>>>>>> main
     </div>
   }
 </div>

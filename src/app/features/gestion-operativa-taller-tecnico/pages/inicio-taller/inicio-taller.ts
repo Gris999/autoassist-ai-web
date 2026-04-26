@@ -168,6 +168,13 @@ export class InicioTaller implements OnInit {
         status: 'available',
       },
       {
+        title: 'Tecnicos y especialidades',
+        description: 'Administra el personal tecnico del taller y las especialidades asociadas a cada perfil.',
+        helper: 'Gestion Operativa',
+        route: '/taller/tecnicos',
+        status: 'available',
+      },
+      {
         title: 'Servicios ofrecidos',
         description: 'Habilita los servicios que tu taller podra tomar mas adelante.',
         helper: 'Gestion Operativa',
@@ -185,12 +192,6 @@ export class InicioTaller implements OnInit {
         helper: 'Gestion de Incidentes',
         route: '/taller/solicitudes',
         status: 'available',
-      },
-      {
-        title: 'Seguimiento e historial',
-        description: 'Consulta avances y trazabilidad cuando el seguimiento quede integrado.',
-        helper: 'Seguimiento',
-        status: 'upcoming',
       },
       {
         title: 'Comisiones',

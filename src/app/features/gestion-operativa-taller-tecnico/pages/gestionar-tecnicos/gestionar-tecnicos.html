@@ -1,0 +1,563 @@
+<div class="technicians-page">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <span class="card-kicker">Gestion Operativa de Taller y Tecnico</span>
+      <h2>Gestionar tecnicos</h2>
+      <p>
+        Controla el personal tecnico del taller: alta, edicion, disponibilidad,
+        estado operativo y especialidades.
+      </p>
+
+      <div class="hero-actions">
+        <button type="button" class="primary-button" (click)="startCreateMode()">
+          Registrar tecnico
+        </button>
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading() || refreshing()"
+          (click)="loadTechnicianManagement()"
+        >
+          {{ refreshing() ? 'Actualizando...' : 'Actualizar lista' }}
+        </button>
+      </div>
+    </div>
+
+    <article class="hero-side-card">
+      <strong>Resumen operativo</strong>
+      <div class="hero-side-grid">
+        <div>
+          <small>Total</small>
+          <span>{{ totalTechnicians() }}</span>
+        </div>
+        <div>
+          <small>Activos</small>
+          <span>{{ totalActive() }}</span>
+        </div>
+        <div>
+          <small>Disponibles</small>
+          <span>{{ totalAvailable() }}</span>
+        </div>
+        <div>
+          <small>Deshabilitados</small>
+          <span>{{ totalDisabled() }}</span>
+        </div>
+      </div>
+    </article>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="feedback-box error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="feedback-box success">{{ successMessage() }}</div>
+  }
+
+  @if (loading()) {
+    <section class="empty-card">
+      <strong>Cargando tecnicos...</strong>
+      <p>Estamos consultando el personal tecnico y sus especialidades.</p>
+    </section>
+  } @else {
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span>Tecnicos</span>
+        <strong>{{ totalTechnicians() }}</strong>
+        <small>Registrados en el taller</small>
+      </article>
+      <article class="metric-card">
+        <span>Activos</span>
+        <strong>{{ totalActive() }}</strong>
+        <small>Habilitados para operar</small>
+      </article>
+      <article class="metric-card">
+        <span>Disponibles</span>
+        <strong>{{ totalAvailable() }}</strong>
+        <small>Listos para asignaciones</small>
+      </article>
+      <article class="metric-card">
+        <span>Deshabilitados</span>
+        <strong>{{ totalDisabled() }}</strong>
+        <small>Fuera del flujo operativo</small>
+      </article>
+    </section>
+
+    <section class="management-grid">
+      <article class="management-card">
+        <div class="section-heading">
+          <div>
+            <h3>Listado de tecnicos</h3>
+            <p>Filtra, consulta y ejecuta acciones operativas desde una sola vista.</p>
+          </div>
+        </div>
+
+        <form class="filters-grid" [formGroup]="filtersForm">
+          <label class="field field--search">
+            <span>Buscar</span>
+            <input
+              type="text"
+              formControlName="search"
+              placeholder="Nombre, apellido, email, celular o especialidad"
+            />
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <select formControlName="estado">
+              <option value="todos">Todos</option>
+              <option value="activos">Activos</option>
+              <option value="deshabilitados">Deshabilitados</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Disponibilidad</span>
+            <select formControlName="disponibilidad">
+              <option value="todos">Todos</option>
+              <option value="disponibles">Disponibles</option>
+              <option value="no_disponibles">No disponibles</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Especialidad</span>
+            <select formControlName="especialidad">
+              <option value="todas">Todas</option>
+              @for (specialty of specialtiesCatalog(); track trackSpecialty($index, specialty)) {
+                <option [value]="specialty.id_especialidad">
+                  {{ specialty.nombre }}
+                </option>
+              }
+            </select>
+          </label>
+        </form>
+
+        @if (filteredTechnicians().length === 0) {
+          <div class="empty-card compact">
+            <strong>Sin tecnicos visibles</strong>
+            <p>
+              No hay resultados para los filtros actuales o aun no se registraron tecnicos.
+            </p>
+          </div>
+        } @else {
+          <div class="table-shell">
+            <div class="table-head">
+              <span>Tecnico</span>
+              <span>Contacto</span>
+              <span>Disponibilidad</span>
+              <span>Estado</span>
+              <span>Especialidades</span>
+              <span>Acciones</span>
+            </div>
+
+            @for (technician of filteredTechnicians(); track trackTechnician($index, technician)) {
+              <div
+                class="table-row"
+                [class.is-selected]="selectedTechnicianId() === technician.id_tecnico"
+              >
+                <div class="table-cell technician-cell">
+                  <span class="avatar-badge">{{ getInitials(technician) }}</span>
+                  <div>
+                    <strong>{{ getFullName(technician) }}</strong>
+                    <small>#{{ technician.id_tecnico }} | {{ technician.email }}</small>
+                  </div>
+                </div>
+
+                <div class="table-cell">
+                  <strong>{{ technician.celular }}</strong>
+                  <small>{{ technician.telefono_contacto }}</small>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getAvailabilityBadgeClass(technician.disponible)">
+                    {{ technician.disponible ? 'Disponible' : 'No disponible' }}
+                  </span>
+                </div>
+
+                <div class="table-cell">
+                  <span [class]="getStateBadgeClass(technician.estado)">
+                    {{ technician.estado ? 'Activo' : 'Deshabilitado' }}
+                  </span>
+                </div>
+
+                <div class="table-cell specialties-preview">
+                  @if (getSpecialtiesPreview(technician.id_tecnico).length > 0) {
+                    @for (specialty of getSpecialtiesPreview(technician.id_tecnico); track trackSpecialty($index, specialty)) {
+                      <span class="specialty-chip">{{ specialty.nombre }}</span>
+                    }
+                  } @else {
+                    <small>Sin especialidades</small>
+                  }
+                </div>
+
+                <div class="table-cell actions-cell">
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="selectTechnician(technician.id_tecnico, 'view')"
+                  >
+                    Ver
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="editTechnician(technician.id_tecnico)"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button action-button"
+                    (click)="selectTechnician(technician.id_tecnico, 'view')"
+                  >
+                    Especialidades
+                  </button>
+                  <button
+                    type="button"
+                    class="danger-button action-button"
+                    [disabled]="statusSavingId() === technician.id_tecnico"
+                    (click)="changeTechnicianStatus(technician, !technician.estado)"
+                  >
+                    @if (statusSavingId() === technician.id_tecnico) {
+                      Procesando...
+                    } @else {
+                      {{ technician.estado ? 'Deshabilitar' : 'Habilitar' }}
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </article>
+
+      <div class="side-stack">
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>
+                @if (isCreateMode()) {
+                  Registrar tecnico
+                } @else if (isEditMode()) {
+                  Editar tecnico
+                } @else {
+                  Detalle del tecnico
+                }
+              </h3>
+              <p>
+                @if (isCreateMode()) {
+                  Crea un nuevo perfil tecnico vinculado al taller.
+                } @else if (isEditMode()) {
+                  Ajusta los datos operativos sin cambiar el estado por PUT.
+                } @else {
+                  Revisa el estado actual y entra al modo edicion cuando lo necesites.
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (selectionLoading()) {
+            <div class="empty-card compact">
+              <strong>Cargando detalle...</strong>
+              <p>Estamos consultando los datos completos del tecnico seleccionado.</p>
+            </div>
+          } @else if (isViewMode()) {
+            @if (selectedTechnicianDetail(); as detail) {
+              <div class="detail-card">
+                <div class="detail-head">
+                  <span class="avatar-badge large">{{ getInitials(detail) }}</span>
+                  <div>
+                    <strong>{{ getFullName(detail) }}</strong>
+                    <small>{{ detail.email }}</small>
+                  </div>
+                </div>
+
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span>Celular</span>
+                    <strong>{{ detail.celular }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Telefono</span>
+                    <strong>{{ detail.telefono_contacto }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Disponibilidad</span>
+                    <strong>{{ detail.disponible ? 'Disponible' : 'No disponible' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Estado</span>
+                    <strong>{{ detail.estado ? 'Activo' : 'Deshabilitado' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Latitud actual</span>
+                    <strong>{{ detail.latitud_actual ?? 'No disponible' }}</strong>
+                  </div>
+                  <div class="detail-item">
+                    <span>Longitud actual</span>
+                    <strong>{{ detail.longitud_actual ?? 'No disponible' }}</strong>
+                  </div>
+                </div>
+
+                <div class="detail-actions">
+                  <button
+                    type="button"
+                    class="primary-button"
+                    (click)="editTechnician(detail.id_tecnico)"
+                  >
+                    Editar tecnico
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="startCreateMode()"
+                  >
+                    Nuevo registro
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-card compact">
+                <strong>Selecciona un tecnico</strong>
+                <p>El detalle aparecera aqui cuando elijas un tecnico del listado.</p>
+              </div>
+            }
+          } @else {
+            <form class="form-grid" [formGroup]="technicianForm">
+              <div class="field-grid">
+                <label class="field">
+                  <span>Nombres</span>
+                  <input type="text" formControlName="nombres" />
+                </label>
+
+                <label class="field">
+                  <span>Apellidos</span>
+                  <input type="text" formControlName="apellidos" />
+                </label>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Celular</span>
+                  <input type="text" formControlName="celular" />
+                </label>
+
+                <label class="field">
+                  <span>Telefono de contacto</span>
+                  <input type="text" formControlName="telefono_contacto" />
+                </label>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Email</span>
+                  <input type="email" formControlName="email" />
+                </label>
+
+                @if (isCreateMode()) {
+                  <label class="field">
+                    <span>Password</span>
+                    <input type="password" formControlName="password" />
+                  </label>
+                }
+              </div>
+
+              <div class="toggle-grid">
+                <label class="checkbox-field">
+                  <input type="checkbox" formControlName="disponible" />
+                  <span>Disponible para asignaciones</span>
+                </label>
+
+                @if (isCreateMode()) {
+                  <label class="checkbox-field">
+                    <input type="checkbox" formControlName="estado" />
+                    <span>Crear tecnico habilitado</span>
+                  </label>
+                } @else if (selectedTechnicianDetail(); as detail) {
+                  <div class="status-note">
+                    <span [class]="getStateBadgeClass(detail.estado)">
+                      {{ detail.estado ? 'Activo' : 'Deshabilitado' }}
+                    </span>
+                    <small>El estado se actualiza solo con habilitar o deshabilitar.</small>
+                  </div>
+                }
+              </div>
+
+              <div class="helper-card">
+                <strong>Validaciones clave</strong>
+                <span>
+                  La contrasena solo aplica al registrar. En edicion, el backend exige al menos
+                  un cambio y no acepta el campo estado por PUT.
+                </span>
+              </div>
+
+              <div class="detail-actions">
+                <button
+                  type="button"
+                  class="primary-button"
+                  [disabled]="savingTechnician() || (isEditMode() && !hasTechnicianChanges())"
+                  (click)="saveTechnician()"
+                >
+                  @if (savingTechnician()) {
+                    Guardando...
+                  } @else if (isCreateMode()) {
+                    Registrar tecnico
+                  } @else {
+                    Guardar cambios
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary-button"
+                  [disabled]="savingTechnician()"
+                  (click)="cancelTechnicianEditor()"
+                >
+                  {{ isCreateMode() ? 'Limpiar formulario' : 'Cancelar edicion' }}
+                </button>
+              </div>
+            </form>
+          }
+        </article>
+
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>Especialidades del tecnico</h3>
+              <p>
+                Guarda la seleccion completa con PUT. El backend reemplaza toda la lista actual.
+              </p>
+            </div>
+          </div>
+
+          @if (specialtiesError()) {
+            <div class="feedback-box error">{{ specialtiesError() }}</div>
+          }
+
+          @if (specialtiesSuccess()) {
+            <div class="feedback-box success">{{ specialtiesSuccess() }}</div>
+          }
+
+          @if (selectionLoading() || specialtiesLoading()) {
+            <div class="empty-card compact">
+              <strong>Cargando especialidades...</strong>
+              <p>Estamos consultando el perfil tecnico seleccionado.</p>
+            </div>
+          } @else {
+            @if (selectedTechnician(); as technician) {
+              <div class="specialties-panel">
+                <div class="selected-technician">
+                  <span class="avatar-badge">{{ getInitials(technician) }}</span>
+                  <div>
+                    <strong>{{ getFullName(technician) }}</strong>
+                    <small>{{ technician.email }}</small>
+                  </div>
+                </div>
+
+                <div class="helper-card accent">
+                  <strong>Guardado recomendado</strong>
+                  <span>
+                    Usa el boton principal para reemplazar la lista completa y evitar errores por
+                    duplicados al usar POST.
+                  </span>
+                </div>
+
+                <div class="current-specialties">
+                  <strong>Especialidades actuales</strong>
+
+                  @if (selectedTechnicianSpecialties().length > 0) {
+                    <div class="specialty-chip-grid">
+                      @for (specialty of selectedTechnicianSpecialties(); track trackSpecialty($index, specialty)) {
+                        <div class="specialty-row">
+                          <span class="specialty-chip">{{ specialty.nombre }}</span>
+                          <button
+                            type="button"
+                            class="chip-action"
+                            [disabled]="specialtiesSaving()"
+                            (click)="removeSpecialty(specialty.id_especialidad)"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <small>Este tecnico aun no tiene especialidades asignadas.</small>
+                  }
+                </div>
+
+                <form class="catalog-grid" [formGroup]="specialtiesForm">
+                  @if (specialtiesCatalog().length === 0) {
+                    <div class="empty-card compact">
+                      <strong>Sin catalogo disponible</strong>
+                      <p>No se encontraron especialidades registradas en el backend.</p>
+                    </div>
+                  } @else {
+                    @for (specialty of specialtiesCatalog(); track trackSpecialty($index, specialty)) {
+                      <label class="catalog-option">
+                        <input
+                          type="checkbox"
+                          [checked]="isSpecialtySelected(specialty.id_especialidad)"
+                          (change)="toggleSpecialty(specialty.id_especialidad, $event)"
+                        />
+                        <div>
+                          <strong>{{ specialty.nombre }}</strong>
+                          <span>{{ specialty.descripcion || 'Sin descripcion adicional.' }}</span>
+                        </div>
+                      </label>
+                    }
+                  }
+                </form>
+
+                <div class="detail-actions">
+                  <button
+                    type="button"
+                    class="primary-button"
+                    [disabled]="specialtiesSaving() || !hasSpecialtyChanges()"
+                    (click)="saveSpecialties()"
+                  >
+                    {{ specialtiesSaving() ? 'Guardando...' : 'Guardar especialidades' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    [disabled]="specialtiesSaving()"
+                    (click)="reloadSelectedSpecialties()"
+                  >
+                    Recargar especialidades
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-card compact">
+                <strong>Selecciona un tecnico</strong>
+                <p>
+                  El panel de especialidades se habilita al elegir un tecnico del listado.
+                </p>
+              </div>
+            }
+          }
+        </article>
+
+        <article class="management-card">
+          <div class="section-heading">
+            <div>
+              <h3>Validaciones del sistema</h3>
+              <p>Reglas operativas visibles para evitar envios invalidos al backend.</p>
+            </div>
+          </div>
+
+          <div class="rules-list">
+            @for (rule of systemRules; track trackRule($index, rule)) {
+              <div class="rule-item">
+                <strong>{{ rule.title }}</strong>
+                <span>{{ rule.description }}</span>
+              </div>
+            }
+          </div>
+        </article>
+      </div>
+    </section>
+  }
+</div>
